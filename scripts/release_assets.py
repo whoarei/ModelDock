@@ -67,9 +67,26 @@ def main():
     )
     parser.add_argument("--notes", type=Path)
     parser.add_argument("--allow-unsigned", action="store_true")
+    parser.add_argument(
+        "--record",
+        action="store_true",
+        help="Write a public signature record for the publishing workflow",
+    )
     args = parser.parse_args()
     notes = (args.notes or ROOT / f"docs/releases/{args.version}.md").read_text(encoding="utf-8")
     result = prepare(args.directory, args.version, notes, args.allow_unsigned)
+    if args.record:
+        if result is None:
+            raise ValueError("只有已签名的安装包可以生成发布记录")
+        installer = args.directory / f"ModelDock_{args.version}_x64-setup.exe"
+        record = dict(
+            version=args.version,
+            installer_sha256=hashlib.sha256(installer.read_bytes()).hexdigest(),
+            signature=installer.with_suffix(".exe.sig").read_text(encoding="utf-8").strip(),
+        )
+        target = ROOT / "release-signatures" / f"v{args.version}.json"
+        target.parent.mkdir(exist_ok=True)
+        target.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
     print(
         "Signed updater metadata prepared"
         if result

@@ -1,0 +1,63 @@
+name: Verify and publish locally signed release
+on:
+  push:
+    branches: [main]
+    paths: ['release-signatures/v*.json']
+permissions:
+  contents: write
+concurrency:
+  group: publish-signed-release
+  cancel-in-progress: false
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.record.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate public signature record
+        id: record
+        run: |
+          python - <<'PY'
+          import json,pathlib,os,re
+          version=json.loads(pathlib.Path('apps/desktop/package.json').read_text())['version']
+          record=json.loads(pathlib.Path(f'release-signatures/v{version}.json').read_text(encoding='utf-8'))
+          assert record['version'] == version
+          assert re.fullmatch('[a-f0-9]{64}',record['installer_sha256'])
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f: f.write(f'tag=v{version}\n')
+          PY
+      - name: Attach verified metadata to the draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.record.outputs.tag }}
+        run: |
+          test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = true
+          gh release download "$RELEASE_TAG" --dir release-assets --pattern '*-setup.exe'
+          python - <<'PY'
+          import hashlib,json,pathlib,os
+          version=os.environ['RELEASE_TAG'][1:]
+          record=json.loads(pathlib.Path(f'release-signatures/v{version}.json').read_text(encoding='utf-8'))
+          installer=pathlib.Path(f'release-assets/ModelDock_{version}_x64-setup.exe')
+          assert hashlib.sha256(installer.read_bytes()).hexdigest() == record['installer_sha256'], 'Installer changed since local signing'
+          installer.with_suffix('.exe.sig').write_text(record['signature'],encoding='utf-8')
+          PY
+          python scripts/release_assets.py release-assets
+          gh release upload "$RELEASE_TAG" release-assets/*.sig release-assets/latest.json release-assets/SHA256SUMS --clobber
+  upgrade:
+    needs: stage
+    uses: ./.github/workflows/updater-smoke.yml
+    with:
+      tag: ${{ needs.stage.outputs.tag }}
+  publish:
+    needs: [stage, upgrade]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish tested stable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ needs.stage.outputs.tag }}
+        run: gh release edit "$RELEASE_TAG" --draft=false --latest

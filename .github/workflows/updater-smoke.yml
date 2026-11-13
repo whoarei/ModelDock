@@ -1,5 +1,10 @@
 name: Verify signed application upgrade
 on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       tag:
@@ -7,7 +12,7 @@ on:
         required: true
         default: v0.2.0
 permissions:
-  contents: read
+  contents: write
 jobs:
   upgrade:
     runs-on: windows-latest

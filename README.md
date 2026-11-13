@@ -90,10 +90,10 @@ npm run build --prefix apps/desktop
 cd apps/desktop
 npm run tauri -- signer sign --private-key-path <private-key-file> --app-version 0.2.0 <installer.exe>
 cd ../..
-uv run python scripts/release_assets.py <release-dir>
+uv run python scripts/release_assets.py <release-dir> --record
 ```
 
-将 `.exe.sig`、`latest.json`、`SHA256SUMS` 上传到对应草稿 Release，再运行 `Verify signed application upgrade` 工作流，指定该草稿标签。它从草稿下载真实签名包，以临时低版本客户端测试下载、安装、重启和数据保留；通过后才将草稿发布为 latest。私钥必须独立安全备份；遗失后无法用现有安装版信任的公钥继续更新。仓库只保存公钥。
+将生成的 `release-signatures/v<版本>.json` 提交到 main，会触发 `Verify and publish locally signed release`。该文件只含公开签名、版本与安装包 SHA-256；流水线先检查草稿安装包摘要，再附加更新清单，并复用升级工作流测试下载、安装、重启和数据保留，通过后才发布为 latest。也可单独运行 `Verify signed application upgrade` 检查指定草稿标签。私钥必须独立安全备份；遗失后无法用现有安装版信任的公钥继续更新。仓库只保存公钥。
 
 ## 代码布局
 
