@@ -41,7 +41,7 @@
     },
     "windows": {
       "nsis": {
-        "displayLanguageSelector": true,
+        "displayLanguageSelector": false,
         "languages": [
           "SimpChinese",
           "English"
