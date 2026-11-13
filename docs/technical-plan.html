@@ -1,0 +1,1014 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="apricot" data-document-id="modeldock-technical-plan">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>ModelDock 技术方案</title>
+  <script>
+    (() => {
+      const root = document.documentElement;
+      try {
+        const key = 'rtd-html-docs:theme:' + (root.dataset.documentId || location.pathname);
+        const saved = localStorage.getItem(key);
+        if (["classic","slate","forest","sky","mint","yellow","pink","apricot","lavender","dark"].includes(saved)) root.dataset.theme = saved;
+      } catch (_) { /* Reading and switching still work when storage is blocked. */ }
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #404040;
+      --muted: #737373;
+      --paper: #edf0f2;
+      --white: #fcfcfc;
+      --line: #e1e4e5;
+      --accent: #2980b9;
+      --accent-hover: #205f88;
+      --accent-soft: #e7f2fa;
+      --accent-ink: #25668f;
+      --accent-line: #c7ddeb;
+      --accent-edge: #6ab0de;
+      --amber: #916413;
+      --sand: #ffedcc;
+      --warning-line: #f0b37e;
+      --surface: #f3f6f6;
+      --surface-strong: #e8ecec;
+      --surface-raised: #fff;
+      --surface-subtle: #f8fafa;
+      --surface-neutral: #ededed;
+      --ink-soft: #555;
+      --ink-secondary: #626262;
+      --code-ink: #a33b31;
+      --selection: #b9d8ee;
+      --selection-ink: #253847;
+      --focus: #55a5d9;
+      --nav: #343131;
+      --nav-text: #d9d9d9;
+      --nav-hover: #4e4a4a;
+      --nav-active: #e3e3e3;
+      --nav-active-ink: #404040;
+      --nav-number: #b0adad;
+      --nav-active-number: #616161;
+      --nav-foot: #272525;
+      --nav-muted: #b3b3b3;
+      --nav-scrollbar: #686464;
+      --brand-bg: var(--accent);
+      --brand-ink: #fff;
+      --theme-swatch: var(--accent);
+      --nav-hover-ink: #fff;
+      --brand-sub: #e3eff7;
+      --button-bg: var(--accent);
+      --button-hover: var(--accent-hover);
+      --button-border: #2472a4;
+      --button-shadow: #1c5d87;
+      --select-bg: #383636;
+      --select-border: #777171;
+      --diagram-response: #42765f;
+      --diagram-muted: #666666;
+      --diagram-line: #d4dada;
+      --diagram-soft-line: #d5dada;
+      --diagram-accent-line: #b9d5e8;
+      --diagram-warning: #a66b25;
+      --diagram-warning-bg: #fff7e9;
+      --diagram-warning-line: #e8d2aa;
+      --diagram-extension: #766285;
+      --diagram-extension-bg: #f5f0f7;
+      --diagram-extension-line: #cdbed5;
+      --mono: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      --heading: Georgia, "Times New Roman", "Noto Serif CJK SC", "Microsoft YaHei", serif;
+    }
+
+    @media all {
+      :root[data-theme="slate"] {
+        --paper: #e9edf0;
+        --white: #fafbfc;
+        --line: #dce2e7;
+        --accent: #52677b;
+        --accent-hover: #3d5062;
+        --accent-soft: #eaf0f5;
+        --accent-ink: #40596f;
+        --accent-line: #ccd8e3;
+        --accent-edge: #8aa2b7;
+        --surface: #f0f3f6;
+        --surface-strong: #e4e9ee;
+        --surface-subtle: #f6f8fa;
+        --nav: #2c333b;
+        --nav-hover: #3c4752;
+        --nav-active: #e2e8ee;
+        --nav-foot: #222830;
+        --nav-scrollbar: #657484;
+        --nav-number: #a7b7c5;
+        --brand-sub: #e4eaf0;
+        --focus: #a4bdd3;
+        --button-border: #475e72;
+        --button-shadow: #374c5e;
+        --select-bg: #303a44;
+        --select-border: #6b7c8c;
+        --selection: #cad9e6;
+        --diagram-response: #426f70;
+        --diagram-accent-line: #c2d0dd;
+      }
+      :root[data-theme="forest"] {
+        --paper: #ebf0ed;
+        --white: #fcfdfb;
+        --line: #dce5df;
+        --accent: #26735b;
+        --accent-hover: #19553f;
+        --accent-soft: #eaf4ee;
+        --accent-ink: #256148;
+        --accent-line: #c4ddce;
+        --accent-edge: #72aa8f;
+        --surface: #f0f5f1;
+        --surface-strong: #e3ece6;
+        --surface-subtle: #f7faf7;
+        --nav: #293a33;
+        --nav-hover: #3b5146;
+        --nav-active: #e2ece6;
+        --nav-foot: #213029;
+        --nav-scrollbar: #637e6f;
+        --nav-number: #a8bfb1;
+        --brand-sub: #e2f1e9;
+        --focus: #9bceb4;
+        --button-border: #21654e;
+        --button-shadow: #164c39;
+        --select-bg: #2e4237;
+        --select-border: #6c8b7a;
+        --selection: #c5e4d2;
+        --selection-ink: #244736;
+        --diagram-response: #466ba0;
+        --diagram-accent-line: #bcd9c7;
+      }
+      :root[data-theme="sky"] {
+        --theme-swatch: #3566f0;
+        --paper: #f7f9fe;
+        --white: #fefeff;
+        --line: #dfe7fd;
+        --accent: #3566f0;
+        --accent-hover: #2347b5;
+        --accent-soft: #f3f6fe;
+        --accent-ink: #3566f0;
+        --accent-line: #d3ddfc;
+        --accent-edge: #688cf4;
+        --surface: #f9faff;
+        --surface-strong: #eff3fe;
+        --surface-subtle: #fcfdff;
+        --surface-neutral: #f1f4fe;
+        --selection: #c2d1fb;
+        --selection-ink: #29456e;
+        --focus: #3566f0;
+        --nav: #f6f8fe;
+        --nav-text: #29456e;
+        --nav-hover: #e9eefd;
+        --nav-hover-ink: #29456e;
+        --nav-active: #d7e0fc;
+        --nav-active-ink: #29456e;
+        --nav-number: #536781;
+        --nav-active-number: #29456e;
+        --nav-foot: #eff3fe;
+        --nav-muted: #536781;
+        --nav-scrollbar: #b2c5f9;
+        --brand-bg: #3566f0;
+        --brand-ink: #ffffff;
+        --brand-sub: #ffffff;
+        --button-bg: #3566f0;
+        --button-hover: #2347b5;
+        --button-border: #2347b5;
+        --button-shadow: #2347b5;
+        --select-bg: #fff;
+        --select-border: #a4baf8;
+        --diagram-response: #32785f;
+        --diagram-accent-line: #becefa;
+      }
+      :root[data-theme="mint"] {
+        --theme-swatch: #04bb9f;
+        --paper: #f5fcfb;
+        --white: #feffff;
+        --line: #d7f4f0;
+        --accent: #087b69;
+        --accent-hover: #075b4e;
+        --accent-soft: #f0fbf9;
+        --accent-ink: #087b69;
+        --accent-line: #c8f0ea;
+        --accent-edge: #43ccb7;
+        --surface: #f7fdfc;
+        --surface-strong: #ebfaf7;
+        --surface-subtle: #fbfefe;
+        --surface-neutral: #edfaf8;
+        --selection: #b4ebe2;
+        --selection-ink: #285b50;
+        --focus: #087b69;
+        --nav: #f4fcfb;
+        --nav-text: #285b50;
+        --nav-hover: #e3f8f4;
+        --nav-hover-ink: #285b50;
+        --nav-active: #cdf1ec;
+        --nav-active-ink: #285b50;
+        --nav-number: #4f6c62;
+        --nav-active-number: #285b50;
+        --nav-foot: #ebfaf7;
+        --nav-muted: #4f6c62;
+        --nav-scrollbar: #a0e5db;
+        --brand-bg: #04bb9f;
+        --brand-ink: #073d32;
+        --brand-sub: #073d32;
+        --button-bg: #087b69;
+        --button-hover: #075b4e;
+        --button-border: #075b4e;
+        --button-shadow: #075b4e;
+        --select-bg: #fff;
+        --select-border: #8ee0d4;
+        --diagram-response: #466fa0;
+        --diagram-accent-line: #afe9e0;
+      }
+      :root[data-theme="yellow"] {
+        --theme-swatch: #ffcc38;
+        --paper: #fffdf7;
+        --white: #fffffe;
+        --line: #fff7df;
+        --accent: #80610b;
+        --accent-hover: #624907;
+        --accent-soft: #fffcf3;
+        --accent-ink: #80610b;
+        --accent-line: #fff4d3;
+        --accent-edge: #ffd96a;
+        --surface: #fffdf9;
+        --surface-strong: #fffbef;
+        --surface-subtle: #fffefc;
+        --surface-neutral: #fffbf1;
+        --selection: #fff0c3;
+        --selection-ink: #66531e;
+        --focus: #80610b;
+        --nav: #fffdf6;
+        --nav-text: #66531e;
+        --nav-hover: #fff9e9;
+        --nav-hover-ink: #66531e;
+        --nav-active: #fff5d7;
+        --nav-active-ink: #66531e;
+        --nav-number: #73663f;
+        --nav-active-number: #66531e;
+        --nav-foot: #fffbef;
+        --nav-muted: #73663f;
+        --nav-scrollbar: #ffecb3;
+        --brand-bg: #ffcc38;
+        --brand-ink: #4d3c06;
+        --brand-sub: #4d3c06;
+        --button-bg: #80610b;
+        --button-hover: #624907;
+        --button-border: #624907;
+        --button-shadow: #624907;
+        --select-bg: #fff;
+        --select-border: #ffe8a5;
+        --diagram-response: #327b85;
+        --diagram-accent-line: #ffefbf;
+      }
+      :root[data-theme="pink"] {
+        --theme-swatch: #fa70ab;
+        --paper: #fff9fc;
+        --white: #fffeff;
+        --line: #fee8f2;
+        --accent: #a33363;
+        --accent-hover: #7e254b;
+        --accent-soft: #fff6fa;
+        --accent-ink: #a33363;
+        --accent-line: #fee0ed;
+        --accent-edge: #fb94c0;
+        --surface: #fffbfc;
+        --surface-strong: #fff4f8;
+        --surface-subtle: #fffdfe;
+        --surface-neutral: #fff5f9;
+        --selection: #fed4e6;
+        --selection-ink: #70364e;
+        --focus: #a33363;
+        --nav: #fff9fb;
+        --nav-text: #70364e;
+        --nav-hover: #feeff6;
+        --nav-hover-ink: #70364e;
+        --nav-active: #fee2ee;
+        --nav-active-ink: #70364e;
+        --nav-number: #785868;
+        --nav-active-number: #70364e;
+        --nav-foot: #fff4f8;
+        --nav-muted: #785868;
+        --nav-scrollbar: #fdc9df;
+        --brand-bg: #fa70ab;
+        --brand-ink: #42152b;
+        --brand-sub: #42152b;
+        --button-bg: #a33363;
+        --button-hover: #7e254b;
+        --button-border: #7e254b;
+        --button-shadow: #7e254b;
+        --select-bg: #fff;
+        --select-border: #fdbfd9;
+        --diagram-response: #347b6d;
+        --diagram-accent-line: #fdd1e4;
+      }
+      :root[data-theme="apricot"] {
+        --theme-swatch: #ff8066;
+        --paper: #fffaf9;
+        --white: #fffefe;
+        --line: #ffebe7;
+        --accent: #a8442d;
+        --accent-hover: #80301f;
+        --accent-soft: #fff7f6;
+        --accent-ink: #a8442d;
+        --accent-line: #ffe3dd;
+        --accent-edge: #ffa08c;
+        --surface: #fffbfa;
+        --surface-strong: #fff5f3;
+        --surface-subtle: #fffdfd;
+        --surface-neutral: #fff6f4;
+        --selection: #ffd9d1;
+        --selection-ink: #743e2f;
+        --focus: #a8442d;
+        --nav: #fff9f8;
+        --nav-text: #743e2f;
+        --nav-hover: #fff1ee;
+        --nav-hover-ink: #743e2f;
+        --nav-active: #ffe6e0;
+        --nav-active-ink: #743e2f;
+        --nav-number: #795c52;
+        --nav-active-number: #743e2f;
+        --nav-foot: #fff5f3;
+        --nav-muted: #795c52;
+        --nav-scrollbar: #ffcfc5;
+        --brand-bg: #ff8066;
+        --brand-ink: #542114;
+        --brand-sub: #542114;
+        --button-bg: #a8442d;
+        --button-hover: #80301f;
+        --button-border: #80301f;
+        --button-shadow: #80301f;
+        --select-bg: #fff;
+        --select-border: #ffc6ba;
+        --diagram-response: #327b85;
+        --diagram-accent-line: #ffd6ce;
+      }
+      :root[data-theme="lavender"] {
+        --theme-swatch: #a25bff;
+        --paper: #fbf8ff;
+        --white: #fffeff;
+        --line: #f0e5ff;
+        --accent: #7840c0;
+        --accent-hover: #5c2c99;
+        --accent-soft: #f9f5ff;
+        --accent-ink: #7840c0;
+        --accent-line: #ebdbff;
+        --accent-edge: #b984ff;
+        --surface: #fcfaff;
+        --surface-strong: #f8f2ff;
+        --surface-subtle: #fefdff;
+        --surface-neutral: #f8f4ff;
+        --selection: #e3ceff;
+        --selection-ink: #5c3a7b;
+        --focus: #7840c0;
+        --nav: #fbf8ff;
+        --nav-text: #5c3a7b;
+        --nav-hover: #f5edff;
+        --nav-hover-ink: #5c3a7b;
+        --nav-active: #ecdeff;
+        --nav-active-ink: #5c3a7b;
+        --nav-number: #6b587f;
+        --nav-active-number: #5c3a7b;
+        --nav-foot: #f8f2ff;
+        --nav-muted: #6b587f;
+        --nav-scrollbar: #dcc1ff;
+        --brand-bg: #a25bff;
+        --brand-ink: #241033;
+        --brand-sub: #241033;
+        --button-bg: #7840c0;
+        --button-hover: #5c2c99;
+        --button-border: #5c2c99;
+        --button-shadow: #5c2c99;
+        --select-bg: #fff;
+        --select-border: #d5b5ff;
+        --diagram-response: #347b6d;
+        --diagram-accent-line: #e1cbff;
+      }
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --ink: #dbe2eb;
+        --muted: #acb7c6;
+        --paper: #121820;
+        --white: #1c2530;
+        --line: #3c4a5c;
+        --accent: #8fc5ed;
+        --accent-hover: #b6def8;
+        --accent-soft: #243c50;
+        --accent-ink: #a8d6f5;
+        --accent-line: #476781;
+        --accent-edge: #598fba;
+        --amber: #f1ce91;
+        --sand: #3e3323;
+        --warning-line: #b88c50;
+        --surface: #232f3d;
+        --surface-strong: #2d3b4c;
+        --surface-raised: #1c2530;
+        --surface-subtle: #202c39;
+        --surface-neutral: #334153;
+        --ink-soft: #c2ccd9;
+        --ink-secondary: #bac7d7;
+        --code-ink: #f2b5a8;
+        --selection: #3c6380;
+        --selection-ink: #fff;
+        --focus: #8fc5ed;
+        --nav: #17212c;
+        --nav-text: #d0dbe6;
+        --nav-hover: #2a3b4e;
+        --nav-active: #304a63;
+        --nav-active-ink: #f1f5fa;
+        --nav-number: #9eafc2;
+        --nav-active-number: #c7d6e5;
+        --nav-foot: #101923;
+        --nav-muted: #aab8c9;
+        --nav-scrollbar: #4e6279;
+        --brand-bg: #23445f;
+        --brand-sub: #d1e1ee;
+        --button-bg: #27668f;
+        --button-hover: #3078a6;
+        --button-border: #397fae;
+        --button-shadow: #19466a;
+        --select-bg: #243448;
+        --select-border: #5a7089;
+        --diagram-response: #99c7a9;
+        --diagram-muted: #b5c2d0;
+        --diagram-line: #495b70;
+        --diagram-soft-line: #495b70;
+        --diagram-accent-line: #52789a;
+        --diagram-warning: #e3bd7e;
+        --diagram-warning-bg: #3b3226;
+        --diagram-warning-line: #8f7852;
+        --diagram-extension: #c2b2dc;
+        --diagram-extension-bg: #322d42;
+        --diagram-extension-line: #78668e;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 28px; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 16px/1.75 "Segoe UI", "Helvetica Neue", Arial, "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    ::selection { background: var(--selection); color: var(--selection-ink); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-hover); text-decoration: underline; }
+    button { font: inherit; cursor: pointer; }
+    button:focus-visible, a:focus-visible, summary:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    /* A classic documentation sidebar, with export always available below it. */
+    .shell { display: grid; grid-template-columns: 300px minmax(0, 1fr); min-height: 100vh; }
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--nav);
+      color: var(--nav-text);
+    }
+    .sidebar-header { flex-shrink: 0; padding: 28px 22px 24px; background: var(--brand-bg); text-align: center; }
+    .brand { font: 700 21px/1.4 "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: var(--brand-ink); }
+    .brand span { color: var(--brand-ink); }
+    .brand svg { width: 17px; height: 17px; vertical-align: -2px; margin-right: 8px; }
+    .sidebar .sub { font-size: 12px; color: var(--brand-sub); margin: 10px 0 0; }
+    .sidebar nav { flex: 1; min-height: 0; padding: 16px 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--nav-scrollbar) transparent; }
+    .sidebar nav::before { content: "文档目录"; display: block; padding: 0 24px 10px; color: var(--focus); font-size: 13px; font-weight: 700; }
+    .sidebar nav a {
+      display: block;
+      color: var(--nav-text);
+      text-decoration: none;
+      padding: 9px 24px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .sidebar nav a:hover { color: var(--nav-hover-ink); background: var(--nav-hover); }
+    .sidebar nav a.active { color: var(--nav-active-ink); background: var(--nav-active); font-weight: 700; }
+    .sidebar nav span { font: 11px var(--mono); color: var(--nav-number); margin-right: 10px; }
+    .sidebar nav a.active span { color: var(--nav-active-number); }
+    .sidebar .foot { flex-shrink: 0; background: var(--nav-foot); padding: 17px 24px 20px; font-size: 11px; line-height: 1.9; color: var(--nav-muted); }
+    .sidebar button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      background: var(--button-bg);
+      border: 1px solid var(--button-border);
+      border-bottom: 2px solid var(--button-shadow);
+      color: white;
+      border-radius: 2px;
+      padding: 8px 12px;
+      margin-top: 13px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .sidebar button:hover { background: var(--button-hover); }
+    .sidebar button svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+
+    .theme-control { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .theme-control[hidden] { display: none; }
+    .theme-control label { flex-shrink: 0; font-size: 12px; color: var(--nav-text); }
+    .theme-control label::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 6px; border-radius: 50%; background: var(--theme-swatch); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); }
+    .theme-control select {
+      min-width: 0;
+      flex: 1;
+      font: 12px/1.5 "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: var(--select-bg);
+      color: var(--nav-text);
+      border: 1px solid var(--select-border);
+      border-radius: 2px;
+      padding: 7px 8px;
+      cursor: pointer;
+    }
+    .theme-control select:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+    main { min-width: 0; max-width: 1100px; width: 100%; padding: 30px 48px 64px; margin: 0; background: var(--white); }
+    .eyebrow { font: 12px/1.6 var(--mono); color: var(--muted); padding-bottom: 22px; margin-bottom: 26px; border-bottom: 1px solid var(--line); }
+    .hero { padding: 0 0 24px; border-bottom: 1px solid var(--line); margin-bottom: 30px; }
+    .hero h1 { font: 700 30px/1.45 var(--heading); letter-spacing: -.4px; margin: 0 0 22px; color: var(--ink); }
+    .hero h1 br { display: none; }
+    .hero .lead { font-size: 16px; line-height: 1.85; color: var(--ink); }
+    .chips { display: flex; gap: 7px; flex-wrap: wrap; margin: 20px 0; }
+    .chip { font: 11px/1.6 var(--mono); padding: 3px 7px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-secondary); }
+    .chip.green { background: var(--accent-soft); color: var(--accent-ink); border-color: var(--accent-line); }
+    .section { margin: 30px 0 44px; scroll-margin-top: 28px; }
+    .section-head { display: flex; align-items: baseline; gap: 11px; margin-bottom: 22px; }
+    .section-num { font: 700 14px var(--mono); color: var(--muted); }
+    h2 { font: 700 25px/1.4 var(--heading); margin: 0; color: var(--ink); }
+    h3 { font: 700 20px/1.5 var(--heading); margin: 26px 0 14px; }
+    h4 { font-size: 17px; margin: 22px 0 12px; }
+    p { margin: 12px 0 18px; }
+    strong { font-weight: 650; }
+    ul, ol { padding-left: 24px; margin: 12px 0 20px; }
+    li { margin: 6px 0; }
+    li::marker { color: var(--ink); }
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin: 20px 0 24px; }
+    .card { background: transparent; border-top: 2px solid var(--line); padding: 15px 0 0; }
+    .card h3 { margin: 0 0 10px; font-size: 17px; }
+    .card p { margin: 0; font-size: 14px; color: var(--ink-soft); }
+    .callout { padding: 14px 18px; border: 0; border-top: 4px solid var(--accent-edge); background: var(--accent-soft); margin: 22px 0; }
+    .callout.amber { border-top-color: var(--warning-line); background: var(--sand); }
+    .callout p { margin: 3px 0; }
+    .small, .caption { font-size: 13px; color: var(--muted); }
+    .caption { margin: 10px 0 20px; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); background: var(--surface-raised); margin: 18px 0 24px; }
+    table { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 1.75; }
+    th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); }
+    th { font-size: 13px; font-weight: 700; background: var(--surface-strong); color: var(--ink); }
+    tr:last-child td { border-bottom: 0; }
+    th:last-child, td:last-child { border-right: 0; }
+    tbody tr:nth-child(even) { background: var(--surface); }
+    td:first-child { font-weight: 550; }
+    code { font: .85em/1.5 var(--mono); background: var(--surface-raised); color: var(--code-ink); border: 1px solid var(--line); padding: 2px 5px; overflow-wrap: anywhere; }
+    pre { font: 12px/1.75 var(--mono); background: var(--surface); color: var(--ink); border: 1px solid var(--line); padding: 16px; overflow: auto; margin: 16px 0 24px; tab-size: 2; }
+    pre code { font: inherit; background: none; border: 0; padding: 0; color: inherit; overflow-wrap: normal; }
+    .tag { display: inline-block; background: var(--accent-soft); color: var(--accent-ink); padding: 1px 6px; font-size: 12px; white-space: nowrap; }
+    .tag.gray { background: var(--surface-neutral); color: var(--ink-secondary); }
+    .tag.amber { background: var(--sand); color: var(--amber); }
+    figure { margin: 22px 0; }
+    .diagram { border: 1px solid var(--line); overflow: auto; background: var(--surface-raised); padding: 14px; }
+    .diagram svg { display: block; width: 100%; min-width: 750px; height: auto; }
+    .architecture-diagram { padding: 10px; }
+    .architecture-diagram svg { min-width: 1080px; }
+    .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 22px 0; }
+    .step { border: 1px solid var(--line); padding: 16px; background: var(--surface); font-size: 13px; }
+    .step b { display: block; font: 12px var(--mono); color: var(--accent); margin-bottom: 8px; }
+    .step strong { display: block; font-size: 15px; }
+    .two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+    .two-col > * { min-width: 0; }
+    .formula { background: var(--surface); border: 1px solid var(--line); padding: 16px 18px; font: 13px/1.9 var(--mono); overflow: auto; }
+    details { border: 1px solid var(--line); background: var(--surface-subtle); margin: 16px 0; padding: 0 16px; }
+    summary { cursor: pointer; padding: 13px 0; font-size: 14px; font-weight: 600; }
+    summary::marker { color: var(--accent); }
+    details[open] { padding-bottom: 16px; }
+    details pre { margin-bottom: 0; }
+    .milestone { display: grid; grid-template-columns: 55px 1fr; border-bottom: 1px solid var(--line); gap: 14px; padding: 20px 0; }
+    .milestone .id { font: 18px var(--mono); color: var(--accent); }
+    .milestone h3 { margin: 0 0 8px; }
+    .milestone p { margin: 0; font-size: 14px; }
+    .refs li { font-size: 14px; margin-bottom: 14px; }
+    .footer { margin-top: 48px; border-top: 1px solid var(--line); padding-top: 22px; font-size: 12px; color: var(--muted); }
+    .nowrap { white-space: nowrap; }
+
+    @media (max-width: 1100px) {
+      .shell { grid-template-columns: 260px minmax(0, 1fr); }
+      .sidebar nav a { padding: 9px 20px; font-size: 13px; }
+      .sidebar nav::before { padding-left: 20px; }
+      .sidebar .foot { padding-left: 20px; padding-right: 20px; }
+      main { padding: 28px 30px 56px; }
+      .cards { grid-template-columns: 1fr; gap: 16px; }
+      .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      .shell { display: block; }
+      .sidebar { position: relative; height: auto; }
+      .sidebar-header { padding: 17px 20px 16px; text-align: left; }
+      .brand { font-size: 20px; }
+      .sidebar .sub { margin-top: 5px; }
+      .sidebar nav { display: flex; flex: none; overflow-x: auto; gap: 0; padding: 10px 12px; }
+      .sidebar nav::before { display: none; }
+      .sidebar nav a { flex-shrink: 0; white-space: nowrap; padding: 8px 10px; font-size: 12px; }
+      .sidebar .foot { display: flex; align-items: center; flex-wrap: wrap; gap: 0 14px; padding: 10px 20px 13px; font-size: 10px; }
+      .theme-control { flex-basis: 100%; margin-bottom: 10px; }
+      .sidebar button { width: auto; margin-top: 8px; padding: 7px 11px; font-size: 12px; }
+      main { padding: 24px 20px 46px; }
+      .eyebrow { font-size: 10px; padding-bottom: 17px; margin-bottom: 22px; }
+      .hero h1 { font-size: 26px; }
+      .hero h1 br { display: initial; }
+      .hero .lead { font-size: 16px; }
+      .two-col { grid-template-columns: 1fr; }
+      .section { margin-bottom: 38px; }
+      .section-head { gap: 9px; }
+      .section-num { font-size: 12px; }
+      h2 { font-size: 22px; }
+      th, td { padding: 9px 10px; min-width: 110px; }
+      .chips { gap: 6px; }
+      .chip { font-size: 10px; }
+      .steps { grid-template-columns: 1fr; }
+      pre { padding: 13px; font-size: 11px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+    @media print {
+      @page { size: A4; margin: 16mm 14mm; }
+      html { scroll-behavior: auto; background: var(--white); }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { background: var(--white); font-size: 10pt; line-height: 1.65; }
+      .shell { display: block; }
+      .sidebar { display: none; }
+      main { max-width: none; padding: 0; background: var(--white); }
+      .eyebrow { margin-bottom: 20px; padding-bottom: 14px; }
+      .hero h1 { font-size: 23pt; }
+      .hero .lead { font-size: 11pt; }
+      .section { margin: 22px 0 28px; }
+      .section-head { break-after: avoid; }
+      h2 { font-size: 17pt; }
+      h3 { font-size: 12pt; break-after: avoid; }
+      .cards { grid-template-columns: repeat(3, 1fr); }
+      .card, .callout, .milestone, .step { break-inside: avoid; }
+      .steps { break-inside: avoid; }
+      table { font-size: 9pt; }
+      thead { display: table-header-group; }
+      tr { break-inside: avoid; }
+      .table-wrap { overflow: visible; }
+      th, td { padding: 7px 9px; min-width: 0; }
+      pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8pt; break-inside: auto; }
+      .diagram { overflow: visible; padding: 8px; break-inside: avoid; }
+      .diagram svg, .architecture-diagram svg { min-width: 0; }
+      figure { break-inside: avoid; }
+      .architecture-diagram { padding: 3px; }
+      .chip { font-size: 8pt; }
+      a { color: var(--accent); text-decoration: none; }
+      details { break-inside: auto; }
+      .caption, .small { font-size: 9pt; }
+      button { display: none; }
+      .footer { font-size: 8pt; }
+    }
+
+    .brand { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">ModelDock · 模型坞</div>
+      <div class="sub">Tauri / Python 插件 / uv / SSH 执行</div>
+    </div>
+    <nav aria-label="文档目录">
+      <a href="#decisions"><span>01</span>设计约束与技术决策</a>
+      <a href="#architecture"><span>02</span>系统分层与组件</a>
+      <a href="#domain"><span>03</span>领域模型与持久化</a>
+      <a href="#plugin-package"><span>04</span>插件包、支持模型与运行方案</a>
+      <a href="#python-sdk"><span>05</span>Python SDK 与统一结果协议</a>
+      <a href="#uv-environments"><span>06</span>uv 环境准备与生命周期</a>
+      <a href="#storage"><span>07</span>目录布局与文件归属</a>
+      <a href="#executor"><span>08</span>执行器接口与通信协议</a>
+      <a href="#ssh"><span>09</span>SSH 部署、后台执行与重连</a>
+      <a href="#task-lifecycle"><span>10</span>任务调度与状态一致性</a>
+      <a href="#benchmark"><span>11</span>性能测试边界与可复现性</a>
+      <a href="#safety-compatibility"><span>12</span>兼容性、凭据与运行边界</a>
+      <a href="#repository"><span>13</span>代码组织与发布形态</a>
+      <a href="#validation"><span>14</span>验证计划与产品验收映射</a>
+      <a href="#implementation"><span>15</span>实施顺序、风险与待决事项</a>
+    </nav>
+    <div class="foot">
+      <div class="theme-control" hidden><label for="theme-select">文档配色</label><select id="theme-select"><optgroup label="经典配色"><option value="classic">经典蓝</option><option value="slate">石墨灰</option><option value="forest">森林绿</option></optgroup><optgroup label="亮色配色"><option value="sky">蓝色 · 亮色</option><option value="mint">绿色 · 亮色</option><option value="yellow">黄色 · 亮色</option><option value="pink">粉色 · 亮色</option><option value="apricot" selected>橙色 · 默认</option><option value="lavender">紫色 · 亮色</option></optgroup><optgroup label="深色配色"><option value="dark">深色</option></optgroup></select></div>
+      更新于 2026-11-13<br>版本 0.1 方案草案<br>单文件 HTML · 支持离线阅读
+      <button type="button" id="print-button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7zM17 11h.01"/></svg>打印 / 保存 PDF</button>
+    </div>
+  </aside>
+  <main>
+    <header class="hero">
+      <div class="eyebrow">系统设计 / 接口草案 / 待实现与验证</div>
+      <h1>ModelDock 技术方案</h1>
+      <p class="lead">以节点为执行边界，以插件为部署和环境维护单元。统一 Python 接入协议，将本机和 SSH 执行封装在同一任务模型下。</p><div class="callout"><strong>本文定义拟实现的技术约定。</strong>接口、清单和消息示例用于设计评审，不代表已发布 SDK 或可运行程序。产品范围与验收目标见 <a href="product-plan.html">产品方案</a>。</div>
+    </header>
+    <section class="section" id="decisions">
+      <div class="section-head"><span class="section-num">01</span><h2>设计约束与技术决策</h2></div>
+<div class="table-wrap"><table><thead><tr><th scope="col">决策</th><th scope="col">采用方案</th><th scope="col">原因与边界</th></tr></thead><tbody><tr><td>桌面外壳</td><td>Tauri 2 + Rust；React + TypeScript + Vite。</td><td>前端负责交互与可视化，Rust 负责系统能力、调度和数据管理。</td></tr><tr><td>模型接入</td><td>版本化 Python SDK + 插件清单。</td><td>模型代码复用 Python 生态；新增已有任务类型的模型无需修改 Rust 调度代码。</td></tr><tr><td>环境归属</td><td>每节点、每插件一个启用环境，由 uv 准备。</td><td>环境属于插件节点安装；运行方案切换和升级可短暂保留候选/回滚目录。</td></tr><tr><td>推理进程</td><td>每个执行任务启动插件工作进程，批量任务内复用已加载模型。</td><td>隔离任务崩溃、支持强制停止；环境不随任务重复创建。</td></tr><tr><td>远程访问</td><td>SSH 控制与事件通道，SFTP 分发文件。</td><td>复用 SSH 认证与加密；远端运行器不需要对外开放业务端口。</td></tr><tr><td>持久化</td><td>本机 SQLite + 文件产物；远端控制器用标准库 SQLite 保存任务。</td><td>状态可恢复，连接断开后按任务编号查询；大文件不写入数据库。</td></tr><tr><td>首批运行后端</td><td>ONNX Runtime CPU；GPU 通过已验证的插件运行方案提供。</td><td>不在统一环境中混装互斥运行包，避免硬件后端选择隐含在全局环境里。</td></tr></tbody></table></div>
+<p>首个完整版本按 M0/M1/M2/M3 分阶段交付，包括 Windows 本机执行和 SSH Linux 执行。首版每节点最多运行一个测试任务，避免平台内任务争用资源影响测试；外部进程负载仍需记录。</p>
+    </section>
+
+    <section class="section" id="architecture">
+      <div class="section-head"><span class="section-num">02</span><h2>系统分层与组件</h2></div>
+<figure><div class="diagram"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 495" role="img" aria-labelledby="technical-architecture-title technical-architecture-desc"><title id="technical-architecture-title">ModelDock 分层架构</title><desc id="technical-architecture-desc">界面通过 Rust 应用服务访问执行器；执行器统一调用节点控制器；工作进程运行在各插件环境中。</desc><defs><marker id="technical-architecture-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="var(--accent, #b84934)"/></marker></defs><path d="M460 90 L460 115" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#technical-architecture-arrow)"/><path d="M330 205 L225 245" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#technical-architecture-arrow)"/><path d="M590 205 L695 245" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#technical-architecture-arrow)"/><path d="M225 335 L225 380" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#technical-architecture-arrow)"/><path d="M695 335 L695 380" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#technical-architecture-arrow)"/><rect x="250" y="15" width="420" height="75" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="460.0" y="46.5" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">React / TypeScript 界面</text><text x="460.0" y="71.5" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">测试 / 插件 / 模型 / 节点 / 记录</text><rect x="250" y="125" width="420" height="80" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="460.0" y="159.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">Rust 应用服务</text><text x="460.0" y="184.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">任务调度 / 插件部署 / SQLite / 文件索引</text><rect x="40" y="255" width="370" height="80" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="225.0" y="289.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">LocalExecutor</text><text x="225.0" y="314.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">本机进程 / 文件 / 事件</text><rect x="510" y="255" width="370" height="80" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="695.0" y="289.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">SshExecutor</text><text x="695.0" y="314.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">SSH 控制 / SFTP / 重连</text><rect x="40" y="390" width="370" height="80" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="225.0" y="424.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">本机插件工作进程</text><text x="225.0" y="449.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">插件 A 环境 或 插件 B 环境</text><rect x="510" y="390" width="370" height="80" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="695.0" y="424.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">远端控制器 → 插件工作进程</text><text x="695.0" y="449.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">持久任务 / 专属环境 / 产物</text></svg></div><figcaption class="caption">界面通过 Rust 应用服务访问执行器；执行器统一调用节点控制器；工作进程运行在各插件环境中。</figcaption></figure><div class="table-wrap"><table><thead><tr><th scope="col">组件</th><th scope="col">职责</th><th scope="col">禁止混入的职责</th></tr></thead><tbody><tr><td>前端</td><td>页面、参数表单、可视化、状态与日志展示。</td><td>执行 Python、拼接 SSH 命令、保存凭据。</td></tr><tr><td>Rust 应用服务</td><td>插件安装、节点连接、环境准备、任务状态、产物索引与导出。</td><td>实现具体模型的预处理或后处理。</td></tr><tr><td>节点控制器</td><td>能力检查、任务登记、队列、事件、取消和工作进程监督。</td><td>依赖具体模型框架。</td></tr><tr><td>Python SDK / Worker</td><td>加载入口、验证协议、计时辅助、日志与结果传输。</td><td>桌面 UI 与 SSH 文件分发。</td></tr><tr><td>Python 插件</td><td>模型加载、前后处理、推理、设备同步及能力声明。</td><td>依赖桌面进程或直接操作界面。</td></tr></tbody></table></div>
+<p>远端控制器使用平台准备的 Python 与标准库；模型框架只安装在插件环境。控制器自身按版本部署，不形成面向用户的另一个“环境管理”入口。</p>
+    </section>
+
+    <section class="section" id="domain">
+      <div class="section-head"><span class="section-num">03</span><h2>领域模型与持久化</h2></div>
+<div class="table-wrap"><table><thead><tr><th scope="col">实体</th><th scope="col">关键字段</th><th scope="col">约束</th></tr></thead><tbody><tr><td>Node</td><td>id、kind、alias、platform、work_root、capabilities、credential_ref、reachability。</td><td>凭据仅保存系统凭据库引用；本机节点由应用创建。</td></tr><tr><td>PluginPackage</td><td>plugin_id、version、package_sha256、sdk_range、manifest。</td><td>包内容按摘要识别，版本号相同但摘要不同视为不同构件并提示。</td></tr><tr><td>SupportedModel</td><td>plugin_id、model_id、task、formats、config、parameter_schema。</td><td>model_id 在插件内唯一。</td></tr><tr><td>PluginInstallation</td><td>node_id、plugin_id、active_version、profile_id、environment_fingerprint、state。</td><td>node_id + plugin_id 唯一；只有一个启用环境。</td></tr><tr><td>ModelInstance</td><td>id、name、plugin_id、model_id、weights_digest、labels_digest、config_snapshot。</td><td>逻辑实例不依赖某一个物理路径；修改形成新的配置修订。</td></tr><tr><td>ModelPlacement</td><td>instance_id、node_id、weight_ref、labels_ref、validation_state。</td><td>记录节点文件引用；验证内容指纹及加载兼容性。</td></tr><tr><td>Task / Attempt</td><td>task_id、node_id、instance_revision、plugin_snapshot、input_manifest、state、metrics。</td><td>每次重试创建新 task_id 并保存 retry_of；运行中配置不可变。</td></tr><tr><td>TaskEvent / Artifact</td><td>task_id、seq、kind、payload；artifact_id、location、sha256、size。</td><td>事件按任务单调递增；产物状态区分远端存在与本机已下载。</td></tr></tbody></table></div>
+<p>本机 SQLite 保存配置、任务镜像与产物索引。远端 tasks.sqlite 是已提交远程任务的状态权威；本机通过事件序号增量同步。单个任务的状态更新和事件写入在同一远端事务中完成。</p>
+<p>删除逻辑记录、删除节点文件和删除缓存分别处理。卸载插件保留模型实例及测试记录；移除节点连接保留历史节点快照，不自动执行远端删除。</p>
+    </section>
+
+    <section class="section" id="plugin-package">
+      <div class="section-head"><span class="section-num">04</span><h2>插件包、支持模型与运行方案</h2></div>
+<p>首版插件包采用目录或 ZIP。导入先解包到临时目录，验证清单和文件摘要，拒绝越界路径、危险链接和重复文件，再登记包。插件包不包含虚拟环境；权重默认独立管理。</p>
+<pre><code class="language-text">efficientnet/
+  manifest.json
+  adapter.py
+  configs/
+    b0.json
+    b1.json
+  schemas/
+    classification-params.json
+  runtime/
+    cpu/
+      pyproject.toml
+      uv.lock
+      .python-version
+  vendor/
+    modeldock_sdk-&lt;version&gt;-py3-none-any.whl</code></pre><details><summary>插件清单示例（协议草案）</summary><pre><code class="language-json">{
+  &quot;schema_version&quot;: &quot;1&quot;,
+  &quot;id&quot;: &quot;efficientnet&quot;,
+  &quot;name&quot;: &quot;EfficientNet 分类&quot;,
+  &quot;version&quot;: &quot;0.1.0&quot;,
+  &quot;sdk_version&quot;: &quot;&gt;=0.1,&lt;0.2&quot;,
+  &quot;entrypoint&quot;: &quot;adapter:Plugin&quot;,
+  &quot;runtime_profiles&quot;: [
+    {
+      &quot;id&quot;: &quot;onnx-cpu&quot;,
+      &quot;project_dir&quot;: &quot;runtime/cpu&quot;,
+      &quot;platforms&quot;: [
+        &quot;windows-x86_64&quot;,
+        &quot;linux-x86_64&quot;
+      ],
+      &quot;providers&quot;: [
+        &quot;CPUExecutionProvider&quot;
+      ]
+    }
+  ],
+  &quot;models&quot;: [
+    {
+      &quot;id&quot;: &quot;efficientnet_b0&quot;,
+      &quot;name&quot;: &quot;EfficientNet-B0&quot;,
+      &quot;task&quot;: &quot;classification&quot;,
+      &quot;weight_formats&quot;: [
+        &quot;onnx&quot;
+      ],
+      &quot;config&quot;: &quot;configs/b0.json&quot;,
+      &quot;parameter_schema&quot;: &quot;schemas/classification-params.json&quot;
+    },
+    {
+      &quot;id&quot;: &quot;efficientnet_b1&quot;,
+      &quot;name&quot;: &quot;EfficientNet-B1&quot;,
+      &quot;task&quot;: &quot;classification&quot;,
+      &quot;weight_formats&quot;: [
+        &quot;onnx&quot;
+      ],
+      &quot;config&quot;: &quot;configs/b1.json&quot;,
+      &quot;parameter_schema&quot;: &quot;schemas/classification-params.json&quot;
+    }
+  ]
+}</code></pre></details>
+<p><code>models</code> 是插件支持模型的目录，不表示对应权重已经安装。模型配置描述输入尺寸、布局、颜色顺序、归一化、输出语义及标签要求。用户实例补充权重、类别文件与允许覆盖的参数。</p>
+<p>YOLO 插件必须明确支持的导出版本、输入布局、输出张量结构、是否内置 NMS，以及框坐标含义。首个参考插件只承诺一种经过验收的输出约定。</p>
+<p>运行方案解决 CPU/GPU 等依赖组合问题。首版可先提供 <code>onnx-cpu</code>；增加 CUDA 方案时，为其提供独立依赖项目和锁文件。一个节点安装只启用一个方案，切换需要重新准备环境；不同节点可以选择不同方案。</p>
+<p>SDK/Worker wheel 由平台按版本分发，在依赖项目和锁文件中固定，并保留可安装的包内相对路径。运行时不临时安装未锁定的最新 SDK。清单主版本、SDK 版本和消息协议分别检查兼容性。</p>
+    </section>
+
+    <section class="section" id="python-sdk">
+      <div class="section-head"><span class="section-num">05</span><h2>Python SDK 与统一结果协议</h2></div>
+<p>插件接收运行上下文、支持模型配置、实例参数和输入样本。上下文由 SDK 提供日志、取消检查、产物写入和计时辅助。以下为接口形态草案：</p>
+<pre><code class="language-python">class Plugin:
+    def load(self, context, model, instance):
+        # 初始化推理后端，校验权重、标签与输入输出。
+        ...
+
+    def predict(self, sample, params, context):
+        # sample 是节点本地输入引用；返回统一 Prediction。
+        ...
+
+    def close(self):
+        # 释放模型和设备资源；框架在正常退出时调用。
+        ...</code></pre><div class="table-wrap"><table><thead><tr><th scope="col">结果类型</th><th scope="col">核心字段</th><th scope="col">语义</th></tr></thead><tbody><tr><td>classification</td><td>sample_id、image_size、top_k[{class_id, label, score}]。</td><td>class_id 使用实例标签映射；score 是已明确含义的概率/置信度，范围 0–1。</td></tr><tr><td>detection</td><td>sample_id、image_size、detections[{class_id, label, score, bbox_xyxy}]。</td><td>坐标为原图像素浮点坐标，左上原点，右下边界按半开区间理解；裁剪至图像边界。</td></tr><tr><td>sample_error</td><td>sample_id、phase、code、message、retryable。</td><td>单项失败有结构化记录；工作进程崩溃属于任务级错误。</td></tr><tr><td>timings / artifacts</td><td>分段耗时、计时能力、产物引用。</td><td>不支持的分段值为 null；二进制结果通过文件产物传输。</td></tr></tbody></table></div>
+<p>SDK 校验必填字段、有限数值、类别范围、框合法性及图像尺寸。模型原始输出由插件转换到协议；业务界面不解析特定模型张量。</p>
+<h3>简单接入与精细计时</h3>
+<p>只实现 <code>predict()</code> 的插件可获得调用总耗时。需要展示独立推理耗时时，使用 SDK 的分阶段扩展点 <code>preprocess / infer / postprocess / synchronize</code>，由 SDK 在边界统一计时。不得把包含前后处理的调用耗时标成纯推理耗时。</p>
+<p>分类与检测各有固定结果视图。参数描述先支持数值、整数、布尔、枚举和字符串字段，以及默认值、范围、说明与高级标记。新任务类型需要扩展协议及前端组件，新增已有类型的模型通常只扩展插件。</p>
+    </section>
+
+    <section class="section" id="uv-environments">
+      <div class="section-head"><span class="section-num">06</span><h2>uv 环境准备与生命周期</h2></div>
+<p>uv 作为随应用分发并固定版本的工具。插件安装、更新或修复时创建环境；测试运行直接启动已准备环境中的 Python，不执行隐式依赖解析或更新。</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">阶段</th><th scope="col">行为</th><th scope="col">结果</th></tr></thead><tbody><tr><td>兼容检查</td><td>检查平台、方案、SDK、Python 要求与可写目录。</td><td>不兼容时停止准备并返回明确原因。</td></tr><tr><td>解释器准备</td><td>使用 uv 管理的指定 Python 版本，记录实际完整版本与可执行文件。</td><td>不依赖用户全局 Python，不改系统默认版本。</td></tr><tr><td>环境同步</td><td>指定候选环境目录，按 uv.lock 执行锁定同步。</td><td>保留依赖日志与环境指纹。</td></tr><tr><td>健康检查</td><td>导入 SDK/入口、检查后端和设备，必要时执行样例加载。</td><td>区分插件环境可用与某个模型实例可用。</td></tr><tr><td>启用</td><td>节点内加插件操作锁，任务排空后切换 current 指针。</td><td>检查失败保留旧环境；成功后按策略清理旧目录。</td></tr><tr><td>修复/卸载</td><td>按指纹重建，或在无活动任务时删除该节点插件安装。</td><td>不删除独立模型权重和历史结果。</td></tr></tbody></table></div><pre><code class="language-text"># 概念命令：由应用传递参数与环境变量，不让用户手动执行。
+# UV_PROJECT_ENVIRONMENT 指向当前候选环境的绝对路径。
+uv sync --project &lt;plugin&gt;/runtime/cpu --locked --no-dev
+
+# 运行阶段直接启动已准备解释器：
+&lt;environment-python&gt; -m modeldock_worker --task-file &lt;task.json&gt;</code></pre>
+<p>环境指纹涵盖插件包摘要、方案、依赖项目与锁文件摘要、实际 Python 版本、平台/架构、SDK 和 uv 版本。驱动与硬件信息作为节点检查记录保存，变化后重新验证。</p>
+<p>依赖项目设置为不需要安装项目本身的运行依赖集合；插件代码目录由 Worker 作为明确的代码根加载。SDK wheel 等本地依赖在插件包中保持固定相对位置。</p>
+<p>uv 的缓存可减少下载与部分安装开销；环境仍可能占用独立空间。远端在自己的系统上创建环境，锁文件需涵盖目标平台，原生依赖和 GPU 驱动逐项验收。</p>
+<p>在线准备失败可重试；离线准备要求可用的 uv、Python 安装介质、完整依赖包/缓存和权重。仅有锁文件不满足离线安装条件。已就绪环境的正常本机测试不联网。</p>
+    </section>
+
+    <section class="section" id="storage">
+      <div class="section-head"><span class="section-num">07</span><h2>目录布局与文件归属</h2></div>
+<p>本机可变数据放在用户数据目录，例如 <code>%LOCALAPPDATA%/ModelDock</code>；安装目录只存程序和工具。远端默认使用 <code>$XDG_DATA_HOME/modeldock</code>，未设置时使用 <code>~/.local/share/modeldock</code>，也可选其他可写目录。</p>
+<pre><code class="language-text">&lt;data-root&gt;/
+  app.sqlite                      # 本机配置；远端用 tasks.sqlite
+  tools/                          # uv、Python 与版本化控制器
+  plugins/&lt;plugin-id&gt;/
+    current.json                  # 启用的版本、方案和环境指纹
+    releases/&lt;version&gt;-&lt;digest&gt;/   # 不可变插件内容
+    envs/&lt;fingerprint&gt;/            # 插件环境；只有一个启用
+    staging/                      # 更新候选，完成后清理
+  artifacts/sha256/&lt;digest&gt;/       # 导入/上传的权重、标签和输入缓存
+  jobs/&lt;task-id&gt;/
+    task.json                     # 不可变配置与输入清单
+    results.jsonl
+    metrics.json
+    logs/
+    outputs/</code></pre>
+<p>外部已有权重和数据目录以显式节点路径引用，不强制复制进内容缓存。提交任务时记录文件大小、修改时间及内容摘要；使用前后验证变化，变化则使复现检查失败。缓存文件按摘要验证，禁止悄悄替换运行中的权重。</p>
+<p>上传先写临时文件，校验大小及 SHA-256 后原子重命名。首版支持完整文件重试和命中缓存时跳过传输；分块续传可后续实现。删除缓存先检查引用和活动任务，原始外部文件不纳入自动清理。</p>
+    </section>
+
+    <section class="section" id="executor">
+      <div class="section-head"><span class="section-num">08</span><h2>执行器接口与通信协议</h2></div>
+<p>Rust 定义与传输无关的执行器接口；本机和 SSH 实现返回同样的领域对象和事件。</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">方法</th><th scope="col">作用</th></tr></thead><tbody><tr><td>probe_node()</td><td>返回平台、目录、设备、运行器版本和后台任务能力。</td></tr><tr><td>prepare_plugin(plugin, profile)</td><td>安装/检查插件环境，返回阶段进度及安装指纹。</td></tr><tr><td>validate_model(instance)</td><td>验证节点文件、模型加载和输出兼容。</td></tr><tr><td>submit_task(task_id, task_spec)</td><td>幂等登记并入队，返回已登记任务状态。</td></tr><tr><td>get_task(task_id) / watch_events(task_id, after_seq)</td><td>获取状态快照和增量事件。</td></tr><tr><td>cancel_task(task_id)</td><td>登记取消请求，等待执行端确认终态。</td></tr><tr><td>fetch_artifact(artifact_id)</td><td>取回指定结果或按需预览。</td></tr></tbody></table></div>
+<p>控制与事件采用 UTF-8 JSON Lines，每行一个完整消息。消息具有协议版本、请求/任务标识、类型和负载；任务事件增加单调序号。标准输出专用于协议，控制器日志写标准错误，插件输出由 Worker 捕获为日志事件。</p>
+<pre><code class="language-json">{
+  &quot;protocol_version&quot;: &quot;1&quot;,
+  &quot;task_id&quot;: &quot;&lt;uuid&gt;&quot;,
+  &quot;seq&quot;: 42,
+  &quot;type&quot;: &quot;progress&quot;,
+  &quot;payload&quot;: {&quot;completed&quot;: 12, &quot;total&quot;: 100, &quot;failed&quot;: 1}
+}</code></pre>
+<p>模型权重、图片和大张量通过文件/产物引用传递。每条消息设置大小上限并校验结构；产物引用解析到明确节点与任务根。事件按 <code>node_id + task_id + seq</code> 去重，日志和进度限流，避免高频消息阻塞推理。</p>
+<p>同一 task_id 与相同配置摘要重复提交，返回原任务；摘要不一致返回冲突。网络超时后先查询原 task_id，避免重复执行。重试操作生成新 task_id。</p>
+    </section>
+
+    <section class="section" id="ssh">
+      <div class="section-head"><span class="section-num">09</span><h2>SSH 部署、后台执行与重连</h2></div>
+<h3>连接与部署</h3>
+<ol><li>Rust 建立 SSH 会话并验证 known_hosts/主机指纹；首次连接由用户核对，指纹变化时阻止静默信任。</li><li>通过 SFTP 创建可写工作目录，上传固定版本工具、节点控制器和插件构件，校验摘要。</li><li>在节点本地用 uv 准备插件环境。依赖从远端可访问的源下载，必要时走明确配置的镜像或离线包。</li><li>运行能力检查，包括后台任务在 SSH 断开后的存活测试。失败时显示不受支持的能力及原因。</li></ol>
+<h3>任务执行</h3>
+<p>SSH 命令入口是固定、受控的控制器启动命令。结构化任务参数经标准输入或任务文件传入；路径使用 SFTP 操作，避免把用户字段直接拼接进远程 shell。</p>
+<p>远端控制器将任务事务性登记到 SQLite，由节点监督进程调度。监督进程脱离当前 SSH 会话，标准输入输出重定向到受控文件；Worker 再使用插件环境启动。没有面向公网的任务服务端口。</p>
+<p>可使用节点可用的用户级服务管理器维持监督进程；直接脱离会话的方式必须通过该节点的存活检查。某些主机会清理登出用户进程，不能仅凭使用 nohup 就声称支持断线续跑。</p>
+<h3>恢复与取消</h3>
+<p>SSH 通道断开只改变可达状态。重连后查询任务快照，按最后事件序号补齐。远端终态覆盖本机缓存。取消在执行端登记，先协作停止，超时后终止该任务工作进程组，再写入终态。</p>
+<p>主机重启或进程异常后，控制器核对进程身份与任务登记；确认工作进程不存在则标记失败及中断原因。首版恢复查询与结果，不自动恢复已经中断的模型计算。</p>
+<p>认证首版优先支持密钥和可用的 SSH agent。凭据放入系统凭据库，数据库仅存引用。具体 Rust SSH/SFTP 库需在 M0 验证 Windows 打包、密钥算法、agent 和流式事件能力后确定。</p>
+    </section>
+
+    <section class="section" id="task-lifecycle">
+      <div class="section-head"><span class="section-num">10</span><h2>任务调度与状态一致性</h2></div>
+<pre><code class="language-text">CREATED → QUEUED → PREPARING → RUNNING → SUCCEEDED
+                                ├──→ PARTIAL_FAILED
+                                ├──→ FAILED
+                                └──→ CANCEL_REQUESTED → CANCELLED
+
+QUEUED / PREPARING 也可接收取消；准备失败进入 FAILED。
+连接状态 UNKNOWN / CONNECTING / ONLINE / UNREACHABLE 独立于任务状态。</code></pre>
+<p>任务调度按节点串行。插件安装、切换环境和卸载对该插件加互斥锁；存在运行或排队引用时，先排空或由用户取消相应任务。输入清单与配置在提交后冻结。</p>
+<p>批量任务至少一个成功且至少一个失败时为 PARTIAL_FAILED；全部失败为 FAILED；请求取消后保留已完成结果并标记完整性。完成与取消竞争时，执行端以首先提交的有效终态为准，取消接口返回“已完成”或“已请求取消”。</p>
+<p>状态、事件和成功/失败计数由执行端统一提交。前端不根据进度百分比推导成功，也不因网络超时推导失败。应用重启后查询非终态任务；本机任务的正常退出提供等待或取消，远程任务可保留运行。</p>
+    </section>
+
+    <section class="section" id="benchmark">
+      <div class="section-head"><span class="section-num">11</span><h2>性能测试边界与可复现性</h2></div>
+<h3>计时边界</h3>
+<div class="table-wrap"><table><thead><tr><th scope="col">字段</th><th scope="col">定义</th></tr></thead><tbody><tr><td>decode_ms</td><td>节点本地读取与解码输入，不含网络上传；记录是否预加载。</td></tr><tr><td>preprocess_ms</td><td>图像缩放、裁剪、颜色/布局和归一化转换。</td></tr><tr><td>inference_ms</td><td>推理调用及必要的设备同步，具体是否包含设备拷贝在后端描述中注明。</td></tr><tr><td>postprocess_ms</td><td>输出解析、分类排序、NMS、坐标还原等。</td></tr><tr><td>sample_total_ms</td><td>从本地读取开始到得到统一预测结果；不含 UI 绘制、输出图片写盘和网络。</td></tr><tr><td>processing_wall_ms</td><td>正式处理循环的墙钟时间；不含模型加载、预热和传输。</td></tr><tr><td>artifact_write_ms / transfer_ms</td><td>结果产物落盘、上传及下载分开计时。</td></tr><tr><td>node_task_wall_ms / client_wall_ms</td><td>节点任务从准备到终态；客户端从提交到所需结果取回，分别记录。</td></tr></tbody></table></div>
+<p>正式测量默认预热 10 次、执行 100 次、batch=1、并发=1。模型加载单独计时。采用节点上的单调高精度时钟；GPU 按后端需要在测量边界同步，不能用主机与客户端时钟相减计算推理时长。</p>
+<p>平均值、P50、P95 基于正式成功样本的明确计时字段，报告统计数 N 与失败数；百分位采用线性插值并记录算法。吞吐量为 <code>成功样本数 / processing_wall_seconds</code>，失败处理消耗的时间仍在窗口中。取消或部分失败须保留相应标记。</p>
+<p>提供两种明确模式：管线模式包含读取/解码；纯推理模式使用预先准备的张量，只支持具有分阶段能力的插件。不能将两种模式的数据混为同一性能结果。</p>
+<h3>报告快照</h3>
+<ul><li>模型/标签/输入清单摘要，插件与 SDK 版本，实际完整参数和配置修订。</li><li>系统、CPU、GPU/驱动、后端/Provider、Python 与关键依赖版本、环境指纹。</li><li>输入形状、批大小、线程、精度、预热与执行次数、输入缓存策略、计时能力和同步方式。</li><li>内存采样周期及采样峰值；GPU 采样支持时标明范围，避免把采样峰值表述为精确瞬时峰值。</li></ul>
+<p>后续精度评估独立于性能模式。分类需要明确标签和 Top-K 口径；检测采用选定 COCO 评估实现与类别映射。无标注、类别不匹配、样本失败等条件必须显式处理，不静默产生看似完整的精度指标。</p>
+    </section>
+
+    <section class="section" id="safety-compatibility">
+      <div class="section-head"><span class="section-num">12</span><h2>兼容性、凭据与运行边界</h2></div>
+<div class="table-wrap"><table><thead><tr><th scope="col">方面</th><th scope="col">设计约束</th></tr></thead><tbody><tr><td>插件信任</td><td>Python 插件以节点用户权限执行任意代码；虚拟环境用于依赖隔离，非安全沙箱。首版导入可信插件。</td></tr><tr><td>系统权限</td><td>本机和远端优先用户目录安装，不默认请求管理员/root 权限或修改驱动。</td></tr><tr><td>凭据</td><td>系统凭据库/SSH agent 持有身份材料；普通日志与报告不记录私钥、口令或连接令牌。</td></tr><tr><td>文件边界</td><td>解包防路径穿越；产物路径在任务根内；外部文件引用明确所属节点，自动清理不触及用户原始目录。</td></tr><tr><td>Tauri 能力</td><td>前端只调用受限 Rust 命令，配置 CSP；本地静态应用不加载第三方可执行页面。</td></tr><tr><td>系统兼容</td><td>首批 Windows 10/11 x64；远端拟以 Ubuntu 22.04/24.04 LTS x64 建立验收矩阵。具体支持以验证记录为准。</td></tr><tr><td>GPU 兼容</td><td>检查选定 Provider、运行库和驱动组合，不能仅根据发现显卡判断可用。CPU 与 GPU 方案分别锁定。</td></tr><tr><td>资源与日志</td><td>任务有超时和取消边界；日志限速及轮转，资源采样低频执行并记录配置。</td></tr></tbody></table></div>
+<p>相同锁文件能约束包版本，但不会保证任意平台、原生库和驱动组合都可运行。插件声明的支持平台必须有对应构建/安装与加载测试记录。</p>
+    </section>
+
+    <section class="section" id="repository">
+      <div class="section-head"><span class="section-num">13</span><h2>代码组织与发布形态</h2></div>
+<pre><code class="language-text">ModelDock/                        # 下面是未来代码布局建议
+  apps/desktop/                   # React / TypeScript
+  apps/desktop/src-tauri/          # Rust 应用服务与执行器
+  packages/python-sdk/            # 插件接口、类型、校验与计时
+  packages/node-controller/       # 节点控制与任务监督
+  packages/python-worker/         # 插件环境内运行入口
+  plugins/efficientnet/            # 参考分类插件
+  plugins/yolo/                    # 参考检测插件
+  fixtures/                       # 可分发的小型测试样本
+  docs/
+    product-plan.html
+    technical-plan.html
+    sources/                      # 两份文档的可编辑渲染输入</code></pre>
+<p>当前仓库只交付两份方案文档及其源数据，不预先放置未验证的空应用框架。实现阶段再建立上述目录。</p>
+<p>Windows 发布包包含 Tauri 应用、固定版本 uv、节点控制器和必要的平台构件。安装器检查 WebView2；在线版提供明确的首次下载流程，完整离线分发需包含相应运行时与依赖。</p>
+<p>Python 解释器和大型框架按节点/插件准备，权重独立分发。远端工具从本机包或经验证的下载来源部署，记录版本与摘要。代码签名与自动更新在实际分发阶段确定，不把 Tauri 外壳大小视作完整安装体积。</p>
+    </section>
+
+    <section class="section" id="validation">
+      <div class="section-head"><span class="section-num">14</span><h2>验证计划与产品验收映射</h2></div>
+<div class="table-wrap"><table><thead><tr><th scope="col">层级</th><th scope="col">关键验证</th><th scope="col">对应产品目标</th></tr></thead><tbody><tr><td>清单和 SDK</td><td>重复 model_id、非法路径、版本不兼容、参数校验、类别及框语义。</td><td>P-02、P-04、P-05</td></tr><tr><td>环境生命周期</td><td>干净节点安装、锁文件重建、两个插件隔离、失败升级回滚、修复不丢数据。</td><td>P-01、P-03、P-12</td></tr><tr><td>本机模型</td><td>分类与检测参考输出容差、坐标还原、损坏图片、异常退出和取消。</td><td>P-05、P-06、P-10</td></tr><tr><td>性能协议</td><td>预热排除、分段计时、GPU 同步、吞吐分母、样本/失败数及报告快照。</td><td>P-07</td></tr><tr><td>远程集成</td><td>部署和文件摘要、远端路径、同任务幂等、事件重放、重连与产物取回。</td><td>P-08、P-09</td></tr><tr><td>故障注入</td><td>SSH 中断、磁盘不足、工作进程退出、监督进程恢复、主机重启、取消竞争。</td><td>P-09、P-10</td></tr><tr><td>发布与凭据</td><td>干净 Windows 安装、WebView2、路径含中文/空格、日志脱敏及离线复用。</td><td>P-01、P-11、P-12</td></tr></tbody></table></div>
+<p>参考输出测试使用可分发且来源清楚的权重/样本，并记录参考实现版本。ONNX 数值容差按模型和 Provider 制定；检测比较包括类别、分数和框匹配，不能只检查“有输出”。</p>
+<p>文档自身使用 rtd-html-docs 的验证脚本检查锚点、离线依赖、10 套配色及保存恢复、桌面/移动布局、无存储/无 JavaScript 回退、打印入口和打印配色。文档验证结果不代表应用功能已通过验收。</p>
+    </section>
+
+    <section class="section" id="implementation">
+      <div class="section-head"><span class="section-num">15</span><h2>实施顺序、风险与待决事项</h2></div>
+<div class="table-wrap"><table><thead><tr><th scope="col">阶段</th><th scope="col">技术交付</th><th scope="col">退出条件</th></tr></thead><tbody><tr><td>M0</td><td>协议草案落地、SDK PoC、uv CPU 环境、参考插件、SSH/SFTP 库互通验证。</td><td>两个插件能被统一 Worker 加载，清单与结果协议稳定到可测试版本。</td></tr><tr><td>M1</td><td>Tauri 本机应用、数据库、插件生命周期、任务监督、可视化、报告与安装器。</td><td>本机从导入到报告形成闭环，故障与离线复用测试通过。</td></tr><tr><td>M2</td><td>SSH 控制器、后台任务、SFTP 缓存、幂等与事件恢复、远程取消和结果取回。</td><td>在支持矩阵节点完成断线测试，数据与任务状态一致。</td></tr><tr><td>M3</td><td>选定 GPU 方案、性能校准、打包和完整回归。</td><td>通过产品验收矩阵，发布明确的兼容性记录。</td></tr></tbody></table></div><div class="table-wrap"><table><thead><tr><th scope="col">风险 / 待决事项</th><th scope="col">处理方式</th></tr></thead><tbody><tr><td>Windows SSH 库及 agent 兼容</td><td>M0 实测后锁定库、算法支持和打包依赖。</td></tr><tr><td>Python 原生包与 CUDA 组合</td><td>以运行方案锁定，维护已验证矩阵，检测失败不自动替换其他后端。</td></tr><tr><td>监督进程的登出存活</td><td>能力探测与真实断线测试；记录主机策略限制，选择合适的用户级运行方式。</td></tr><tr><td>YOLO 输出变体</td><td>先固定一种导出约定，其他变体通过新的模型声明/适配扩展。</td></tr><tr><td>权重与样本来源</td><td>确认可分发范围、摘要和参考结果，再纳入验收资产。</td></tr><tr><td>缓存与空间增长</td><td>首版提供空间统计和显式清理；自动配额/保留策略待实测后制定。</td></tr><tr><td>未定性能目标</td><td>建立硬件基线后再给出吞吐和资源预算，当前只规定测量口径。</td></tr></tbody></table></div>
+<p>本文依据当前讨论形成，设计状态为待评审。文档样式来自 <a href="https://github.com/whoarei/skills/tree/f8d312ed5e5f091e80562cf463758787e176d208/rtd-html-docs">rtd-html-docs skill</a>，固定参考提交 <code>f8d312ed5e5f091e80562cf463758787e176d208</code>，便于重建相同文档外壳。</p>
+    </section>
+    <footer class="footer">ModelDock · 技术方案草案 · 2026-11-13<br>单文件 HTML · 支持离线阅读与打印 / 保存 PDF</footer>
+  </main>
+</div>
+<script>
+  (() => {
+    const root = document.documentElement;
+    const themeSelect = document.getElementById('theme-select');
+    if (themeSelect) {
+      themeSelect.value = root.dataset.theme || 'apricot';
+      themeSelect.closest('.theme-control').hidden = false;
+      themeSelect.addEventListener('change', () => {
+        root.dataset.theme = themeSelect.value;
+        try {
+          const key = 'rtd-html-docs:theme:' + (root.dataset.documentId || location.pathname);
+          localStorage.setItem(key, themeSelect.value);
+        } catch (_) { /* Keep the choice for this visit when storage is blocked. */ }
+      });
+    }
+    const printButton = document.getElementById('print-button');
+    if (printButton) printButton.addEventListener('click', () => window.print());
+    let printState = null;
+    window.addEventListener('beforeprint', () => {
+      if (printState) return;
+      printState = Array.from(document.querySelectorAll('details'), item => [item, item.open]);
+      printState.forEach(([item]) => { item.open = true; });
+    });
+    window.addEventListener('afterprint', () => {
+      if (!printState) return;
+      printState.forEach(([item, wasOpen]) => { item.open = wasOpen; });
+      printState = null;
+    });
+    const links = Array.from(document.querySelectorAll('.sidebar nav a'));
+    const sections = Array.from(document.querySelectorAll('main > section[id]'));
+    let scheduled = false;
+    function syncDirectory() {
+      scheduled = false;
+      if (!sections.length) return;
+      let current = sections[0];
+      for (const section of sections) {
+        if (section.getBoundingClientRect().top <= Math.min(160, innerHeight * .25)) current = section;
+        else break;
+      }
+      links.forEach(link => {
+        const active = link.getAttribute('href') === '#' + current.id;
+        link.classList.toggle('active', active);
+        if (active) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
+    }
+    function scheduleDirectory() {
+      if (!scheduled) { scheduled = true; requestAnimationFrame(syncDirectory); }
+    }
+    window.addEventListener('scroll', scheduleDirectory, { passive: true });
+    window.addEventListener('resize', scheduleDirectory);
+    window.addEventListener('load', scheduleDirectory);
+    syncDirectory();
+  })();
+</script>
+</body>
+</html>

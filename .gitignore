@@ -1,0 +1,23 @@
+# Local credentials and runtime data
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.py[cod]
+*.sqlite
+*.sqlite-*
+
+# Build and dependency outputs
+node_modules/
+target/
+dist/
+
+# Local verification artifacts
+.verification/
+playwright-report/
+test-results/
+
+# Operating system files
+.DS_Store
+Thumbs.db

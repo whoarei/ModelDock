@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="apricot" data-document-id="modeldock-product-plan">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>ModelDock 产品方案</title>
+  <script>
+    (() => {
+      const root = document.documentElement;
+      try {
+        const key = 'rtd-html-docs:theme:' + (root.dataset.documentId || location.pathname);
+        const saved = localStorage.getItem(key);
+        if (["classic","slate","forest","sky","mint","yellow","pink","apricot","lavender","dark"].includes(saved)) root.dataset.theme = saved;
+      } catch (_) { /* Reading and switching still work when storage is blocked. */ }
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #404040;
+      --muted: #737373;
+      --paper: #edf0f2;
+      --white: #fcfcfc;
+      --line: #e1e4e5;
+      --accent: #2980b9;
+      --accent-hover: #205f88;
+      --accent-soft: #e7f2fa;
+      --accent-ink: #25668f;
+      --accent-line: #c7ddeb;
+      --accent-edge: #6ab0de;
+      --amber: #916413;
+      --sand: #ffedcc;
+      --warning-line: #f0b37e;
+      --surface: #f3f6f6;
+      --surface-strong: #e8ecec;
+      --surface-raised: #fff;
+      --surface-subtle: #f8fafa;
+      --surface-neutral: #ededed;
+      --ink-soft: #555;
+      --ink-secondary: #626262;
+      --code-ink: #a33b31;
+      --selection: #b9d8ee;
+      --selection-ink: #253847;
+      --focus: #55a5d9;
+      --nav: #343131;
+      --nav-text: #d9d9d9;
+      --nav-hover: #4e4a4a;
+      --nav-active: #e3e3e3;
+      --nav-active-ink: #404040;
+      --nav-number: #b0adad;
+      --nav-active-number: #616161;
+      --nav-foot: #272525;
+      --nav-muted: #b3b3b3;
+      --nav-scrollbar: #686464;
+      --brand-bg: var(--accent);
+      --brand-ink: #fff;
+      --theme-swatch: var(--accent);
+      --nav-hover-ink: #fff;
+      --brand-sub: #e3eff7;
+      --button-bg: var(--accent);
+      --button-hover: var(--accent-hover);
+      --button-border: #2472a4;
+      --button-shadow: #1c5d87;
+      --select-bg: #383636;
+      --select-border: #777171;
+      --diagram-response: #42765f;
+      --diagram-muted: #666666;
+      --diagram-line: #d4dada;
+      --diagram-soft-line: #d5dada;
+      --diagram-accent-line: #b9d5e8;
+      --diagram-warning: #a66b25;
+      --diagram-warning-bg: #fff7e9;
+      --diagram-warning-line: #e8d2aa;
+      --diagram-extension: #766285;
+      --diagram-extension-bg: #f5f0f7;
+      --diagram-extension-line: #cdbed5;
+      --mono: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      --heading: Georgia, "Times New Roman", "Noto Serif CJK SC", "Microsoft YaHei", serif;
+    }
+
+    @media all {
+      :root[data-theme="slate"] {
+        --paper: #e9edf0;
+        --white: #fafbfc;
+        --line: #dce2e7;
+        --accent: #52677b;
+        --accent-hover: #3d5062;
+        --accent-soft: #eaf0f5;
+        --accent-ink: #40596f;
+        --accent-line: #ccd8e3;
+        --accent-edge: #8aa2b7;
+        --surface: #f0f3f6;
+        --surface-strong: #e4e9ee;
+        --surface-subtle: #f6f8fa;
+        --nav: #2c333b;
+        --nav-hover: #3c4752;
+        --nav-active: #e2e8ee;
+        --nav-foot: #222830;
+        --nav-scrollbar: #657484;
+        --nav-number: #a7b7c5;
+        --brand-sub: #e4eaf0;
+        --focus: #a4bdd3;
+        --button-border: #475e72;
+        --button-shadow: #374c5e;
+        --select-bg: #303a44;
+        --select-border: #6b7c8c;
+        --selection: #cad9e6;
+        --diagram-response: #426f70;
+        --diagram-accent-line: #c2d0dd;
+      }
+      :root[data-theme="forest"] {
+        --paper: #ebf0ed;
+        --white: #fcfdfb;
+        --line: #dce5df;
+        --accent: #26735b;
+        --accent-hover: #19553f;
+        --accent-soft: #eaf4ee;
+        --accent-ink: #256148;
+        --accent-line: #c4ddce;
+        --accent-edge: #72aa8f;
+        --surface: #f0f5f1;
+        --surface-strong: #e3ece6;
+        --surface-subtle: #f7faf7;
+        --nav: #293a33;
+        --nav-hover: #3b5146;
+        --nav-active: #e2ece6;
+        --nav-foot: #213029;
+        --nav-scrollbar: #637e6f;
+        --nav-number: #a8bfb1;
+        --brand-sub: #e2f1e9;
+        --focus: #9bceb4;
+        --button-border: #21654e;
+        --button-shadow: #164c39;
+        --select-bg: #2e4237;
+        --select-border: #6c8b7a;
+        --selection: #c5e4d2;
+        --selection-ink: #244736;
+        --diagram-response: #466ba0;
+        --diagram-accent-line: #bcd9c7;
+      }
+      :root[data-theme="sky"] {
+        --theme-swatch: #3566f0;
+        --paper: #f7f9fe;
+        --white: #fefeff;
+        --line: #dfe7fd;
+        --accent: #3566f0;
+        --accent-hover: #2347b5;
+        --accent-soft: #f3f6fe;
+        --accent-ink: #3566f0;
+        --accent-line: #d3ddfc;
+        --accent-edge: #688cf4;
+        --surface: #f9faff;
+        --surface-strong: #eff3fe;
+        --surface-subtle: #fcfdff;
+        --surface-neutral: #f1f4fe;
+        --selection: #c2d1fb;
+        --selection-ink: #29456e;
+        --focus: #3566f0;
+        --nav: #f6f8fe;
+        --nav-text: #29456e;
+        --nav-hover: #e9eefd;
+        --nav-hover-ink: #29456e;
+        --nav-active: #d7e0fc;
+        --nav-active-ink: #29456e;
+        --nav-number: #536781;
+        --nav-active-number: #29456e;
+        --nav-foot: #eff3fe;
+        --nav-muted: #536781;
+        --nav-scrollbar: #b2c5f9;
+        --brand-bg: #3566f0;
+        --brand-ink: #ffffff;
+        --brand-sub: #ffffff;
+        --button-bg: #3566f0;
+        --button-hover: #2347b5;
+        --button-border: #2347b5;
+        --button-shadow: #2347b5;
+        --select-bg: #fff;
+        --select-border: #a4baf8;
+        --diagram-response: #32785f;
+        --diagram-accent-line: #becefa;
+      }
+      :root[data-theme="mint"] {
+        --theme-swatch: #04bb9f;
+        --paper: #f5fcfb;
+        --white: #feffff;
+        --line: #d7f4f0;
+        --accent: #087b69;
+        --accent-hover: #075b4e;
+        --accent-soft: #f0fbf9;
+        --accent-ink: #087b69;
+        --accent-line: #c8f0ea;
+        --accent-edge: #43ccb7;
+        --surface: #f7fdfc;
+        --surface-strong: #ebfaf7;
+        --surface-subtle: #fbfefe;
+        --surface-neutral: #edfaf8;
+        --selection: #b4ebe2;
+        --selection-ink: #285b50;
+        --focus: #087b69;
+        --nav: #f4fcfb;
+        --nav-text: #285b50;
+        --nav-hover: #e3f8f4;
+        --nav-hover-ink: #285b50;
+        --nav-active: #cdf1ec;
+        --nav-active-ink: #285b50;
+        --nav-number: #4f6c62;
+        --nav-active-number: #285b50;
+        --nav-foot: #ebfaf7;
+        --nav-muted: #4f6c62;
+        --nav-scrollbar: #a0e5db;
+        --brand-bg: #04bb9f;
+        --brand-ink: #073d32;
+        --brand-sub: #073d32;
+        --button-bg: #087b69;
+        --button-hover: #075b4e;
+        --button-border: #075b4e;
+        --button-shadow: #075b4e;
+        --select-bg: #fff;
+        --select-border: #8ee0d4;
+        --diagram-response: #466fa0;
+        --diagram-accent-line: #afe9e0;
+      }
+      :root[data-theme="yellow"] {
+        --theme-swatch: #ffcc38;
+        --paper: #fffdf7;
+        --white: #fffffe;
+        --line: #fff7df;
+        --accent: #80610b;
+        --accent-hover: #624907;
+        --accent-soft: #fffcf3;
+        --accent-ink: #80610b;
+        --accent-line: #fff4d3;
+        --accent-edge: #ffd96a;
+        --surface: #fffdf9;
+        --surface-strong: #fffbef;
+        --surface-subtle: #fffefc;
+        --surface-neutral: #fffbf1;
+        --selection: #fff0c3;
+        --selection-ink: #66531e;
+        --focus: #80610b;
+        --nav: #fffdf6;
+        --nav-text: #66531e;
+        --nav-hover: #fff9e9;
+        --nav-hover-ink: #66531e;
+        --nav-active: #fff5d7;
+        --nav-active-ink: #66531e;
+        --nav-number: #73663f;
+        --nav-active-number: #66531e;
+        --nav-foot: #fffbef;
+        --nav-muted: #73663f;
+        --nav-scrollbar: #ffecb3;
+        --brand-bg: #ffcc38;
+        --brand-ink: #4d3c06;
+        --brand-sub: #4d3c06;
+        --button-bg: #80610b;
+        --button-hover: #624907;
+        --button-border: #624907;
+        --button-shadow: #624907;
+        --select-bg: #fff;
+        --select-border: #ffe8a5;
+        --diagram-response: #327b85;
+        --diagram-accent-line: #ffefbf;
+      }
+      :root[data-theme="pink"] {
+        --theme-swatch: #fa70ab;
+        --paper: #fff9fc;
+        --white: #fffeff;
+        --line: #fee8f2;
+        --accent: #a33363;
+        --accent-hover: #7e254b;
+        --accent-soft: #fff6fa;
+        --accent-ink: #a33363;
+        --accent-line: #fee0ed;
+        --accent-edge: #fb94c0;
+        --surface: #fffbfc;
+        --surface-strong: #fff4f8;
+        --surface-subtle: #fffdfe;
+        --surface-neutral: #fff5f9;
+        --selection: #fed4e6;
+        --selection-ink: #70364e;
+        --focus: #a33363;
+        --nav: #fff9fb;
+        --nav-text: #70364e;
+        --nav-hover: #feeff6;
+        --nav-hover-ink: #70364e;
+        --nav-active: #fee2ee;
+        --nav-active-ink: #70364e;
+        --nav-number: #785868;
+        --nav-active-number: #70364e;
+        --nav-foot: #fff4f8;
+        --nav-muted: #785868;
+        --nav-scrollbar: #fdc9df;
+        --brand-bg: #fa70ab;
+        --brand-ink: #42152b;
+        --brand-sub: #42152b;
+        --button-bg: #a33363;
+        --button-hover: #7e254b;
+        --button-border: #7e254b;
+        --button-shadow: #7e254b;
+        --select-bg: #fff;
+        --select-border: #fdbfd9;
+        --diagram-response: #347b6d;
+        --diagram-accent-line: #fdd1e4;
+      }
+      :root[data-theme="apricot"] {
+        --theme-swatch: #ff8066;
+        --paper: #fffaf9;
+        --white: #fffefe;
+        --line: #ffebe7;
+        --accent: #a8442d;
+        --accent-hover: #80301f;
+        --accent-soft: #fff7f6;
+        --accent-ink: #a8442d;
+        --accent-line: #ffe3dd;
+        --accent-edge: #ffa08c;
+        --surface: #fffbfa;
+        --surface-strong: #fff5f3;
+        --surface-subtle: #fffdfd;
+        --surface-neutral: #fff6f4;
+        --selection: #ffd9d1;
+        --selection-ink: #743e2f;
+        --focus: #a8442d;
+        --nav: #fff9f8;
+        --nav-text: #743e2f;
+        --nav-hover: #fff1ee;
+        --nav-hover-ink: #743e2f;
+        --nav-active: #ffe6e0;
+        --nav-active-ink: #743e2f;
+        --nav-number: #795c52;
+        --nav-active-number: #743e2f;
+        --nav-foot: #fff5f3;
+        --nav-muted: #795c52;
+        --nav-scrollbar: #ffcfc5;
+        --brand-bg: #ff8066;
+        --brand-ink: #542114;
+        --brand-sub: #542114;
+        --button-bg: #a8442d;
+        --button-hover: #80301f;
+        --button-border: #80301f;
+        --button-shadow: #80301f;
+        --select-bg: #fff;
+        --select-border: #ffc6ba;
+        --diagram-response: #327b85;
+        --diagram-accent-line: #ffd6ce;
+      }
+      :root[data-theme="lavender"] {
+        --theme-swatch: #a25bff;
+        --paper: #fbf8ff;
+        --white: #fffeff;
+        --line: #f0e5ff;
+        --accent: #7840c0;
+        --accent-hover: #5c2c99;
+        --accent-soft: #f9f5ff;
+        --accent-ink: #7840c0;
+        --accent-line: #ebdbff;
+        --accent-edge: #b984ff;
+        --surface: #fcfaff;
+        --surface-strong: #f8f2ff;
+        --surface-subtle: #fefdff;
+        --surface-neutral: #f8f4ff;
+        --selection: #e3ceff;
+        --selection-ink: #5c3a7b;
+        --focus: #7840c0;
+        --nav: #fbf8ff;
+        --nav-text: #5c3a7b;
+        --nav-hover: #f5edff;
+        --nav-hover-ink: #5c3a7b;
+        --nav-active: #ecdeff;
+        --nav-active-ink: #5c3a7b;
+        --nav-number: #6b587f;
+        --nav-active-number: #5c3a7b;
+        --nav-foot: #f8f2ff;
+        --nav-muted: #6b587f;
+        --nav-scrollbar: #dcc1ff;
+        --brand-bg: #a25bff;
+        --brand-ink: #241033;
+        --brand-sub: #241033;
+        --button-bg: #7840c0;
+        --button-hover: #5c2c99;
+        --button-border: #5c2c99;
+        --button-shadow: #5c2c99;
+        --select-bg: #fff;
+        --select-border: #d5b5ff;
+        --diagram-response: #347b6d;
+        --diagram-accent-line: #e1cbff;
+      }
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --ink: #dbe2eb;
+        --muted: #acb7c6;
+        --paper: #121820;
+        --white: #1c2530;
+        --line: #3c4a5c;
+        --accent: #8fc5ed;
+        --accent-hover: #b6def8;
+        --accent-soft: #243c50;
+        --accent-ink: #a8d6f5;
+        --accent-line: #476781;
+        --accent-edge: #598fba;
+        --amber: #f1ce91;
+        --sand: #3e3323;
+        --warning-line: #b88c50;
+        --surface: #232f3d;
+        --surface-strong: #2d3b4c;
+        --surface-raised: #1c2530;
+        --surface-subtle: #202c39;
+        --surface-neutral: #334153;
+        --ink-soft: #c2ccd9;
+        --ink-secondary: #bac7d7;
+        --code-ink: #f2b5a8;
+        --selection: #3c6380;
+        --selection-ink: #fff;
+        --focus: #8fc5ed;
+        --nav: #17212c;
+        --nav-text: #d0dbe6;
+        --nav-hover: #2a3b4e;
+        --nav-active: #304a63;
+        --nav-active-ink: #f1f5fa;
+        --nav-number: #9eafc2;
+        --nav-active-number: #c7d6e5;
+        --nav-foot: #101923;
+        --nav-muted: #aab8c9;
+        --nav-scrollbar: #4e6279;
+        --brand-bg: #23445f;
+        --brand-sub: #d1e1ee;
+        --button-bg: #27668f;
+        --button-hover: #3078a6;
+        --button-border: #397fae;
+        --button-shadow: #19466a;
+        --select-bg: #243448;
+        --select-border: #5a7089;
+        --diagram-response: #99c7a9;
+        --diagram-muted: #b5c2d0;
+        --diagram-line: #495b70;
+        --diagram-soft-line: #495b70;
+        --diagram-accent-line: #52789a;
+        --diagram-warning: #e3bd7e;
+        --diagram-warning-bg: #3b3226;
+        --diagram-warning-line: #8f7852;
+        --diagram-extension: #c2b2dc;
+        --diagram-extension-bg: #322d42;
+        --diagram-extension-line: #78668e;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 28px; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 16px/1.75 "Segoe UI", "Helvetica Neue", Arial, "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    ::selection { background: var(--selection); color: var(--selection-ink); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-hover); text-decoration: underline; }
+    button { font: inherit; cursor: pointer; }
+    button:focus-visible, a:focus-visible, summary:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    /* A classic documentation sidebar, with export always available below it. */
+    .shell { display: grid; grid-template-columns: 300px minmax(0, 1fr); min-height: 100vh; }
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--nav);
+      color: var(--nav-text);
+    }
+    .sidebar-header { flex-shrink: 0; padding: 28px 22px 24px; background: var(--brand-bg); text-align: center; }
+    .brand { font: 700 21px/1.4 "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: var(--brand-ink); }
+    .brand span { color: var(--brand-ink); }
+    .brand svg { width: 17px; height: 17px; vertical-align: -2px; margin-right: 8px; }
+    .sidebar .sub { font-size: 12px; color: var(--brand-sub); margin: 10px 0 0; }
+    .sidebar nav { flex: 1; min-height: 0; padding: 16px 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--nav-scrollbar) transparent; }
+    .sidebar nav::before { content: "文档目录"; display: block; padding: 0 24px 10px; color: var(--focus); font-size: 13px; font-weight: 700; }
+    .sidebar nav a {
+      display: block;
+      color: var(--nav-text);
+      text-decoration: none;
+      padding: 9px 24px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .sidebar nav a:hover { color: var(--nav-hover-ink); background: var(--nav-hover); }
+    .sidebar nav a.active { color: var(--nav-active-ink); background: var(--nav-active); font-weight: 700; }
+    .sidebar nav span { font: 11px var(--mono); color: var(--nav-number); margin-right: 10px; }
+    .sidebar nav a.active span { color: var(--nav-active-number); }
+    .sidebar .foot { flex-shrink: 0; background: var(--nav-foot); padding: 17px 24px 20px; font-size: 11px; line-height: 1.9; color: var(--nav-muted); }
+    .sidebar button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      background: var(--button-bg);
+      border: 1px solid var(--button-border);
+      border-bottom: 2px solid var(--button-shadow);
+      color: white;
+      border-radius: 2px;
+      padding: 8px 12px;
+      margin-top: 13px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .sidebar button:hover { background: var(--button-hover); }
+    .sidebar button svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+
+    .theme-control { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .theme-control[hidden] { display: none; }
+    .theme-control label { flex-shrink: 0; font-size: 12px; color: var(--nav-text); }
+    .theme-control label::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 6px; border-radius: 50%; background: var(--theme-swatch); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); }
+    .theme-control select {
+      min-width: 0;
+      flex: 1;
+      font: 12px/1.5 "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: var(--select-bg);
+      color: var(--nav-text);
+      border: 1px solid var(--select-border);
+      border-radius: 2px;
+      padding: 7px 8px;
+      cursor: pointer;
+    }
+    .theme-control select:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+    main { min-width: 0; max-width: 1100px; width: 100%; padding: 30px 48px 64px; margin: 0; background: var(--white); }
+    .eyebrow { font: 12px/1.6 var(--mono); color: var(--muted); padding-bottom: 22px; margin-bottom: 26px; border-bottom: 1px solid var(--line); }
+    .hero { padding: 0 0 24px; border-bottom: 1px solid var(--line); margin-bottom: 30px; }
+    .hero h1 { font: 700 30px/1.45 var(--heading); letter-spacing: -.4px; margin: 0 0 22px; color: var(--ink); }
+    .hero h1 br { display: none; }
+    .hero .lead { font-size: 16px; line-height: 1.85; color: var(--ink); }
+    .chips { display: flex; gap: 7px; flex-wrap: wrap; margin: 20px 0; }
+    .chip { font: 11px/1.6 var(--mono); padding: 3px 7px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-secondary); }
+    .chip.green { background: var(--accent-soft); color: var(--accent-ink); border-color: var(--accent-line); }
+    .section { margin: 30px 0 44px; scroll-margin-top: 28px; }
+    .section-head { display: flex; align-items: baseline; gap: 11px; margin-bottom: 22px; }
+    .section-num { font: 700 14px var(--mono); color: var(--muted); }
+    h2 { font: 700 25px/1.4 var(--heading); margin: 0; color: var(--ink); }
+    h3 { font: 700 20px/1.5 var(--heading); margin: 26px 0 14px; }
+    h4 { font-size: 17px; margin: 22px 0 12px; }
+    p { margin: 12px 0 18px; }
+    strong { font-weight: 650; }
+    ul, ol { padding-left: 24px; margin: 12px 0 20px; }
+    li { margin: 6px 0; }
+    li::marker { color: var(--ink); }
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin: 20px 0 24px; }
+    .card { background: transparent; border-top: 2px solid var(--line); padding: 15px 0 0; }
+    .card h3 { margin: 0 0 10px; font-size: 17px; }
+    .card p { margin: 0; font-size: 14px; color: var(--ink-soft); }
+    .callout { padding: 14px 18px; border: 0; border-top: 4px solid var(--accent-edge); background: var(--accent-soft); margin: 22px 0; }
+    .callout.amber { border-top-color: var(--warning-line); background: var(--sand); }
+    .callout p { margin: 3px 0; }
+    .small, .caption { font-size: 13px; color: var(--muted); }
+    .caption { margin: 10px 0 20px; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); background: var(--surface-raised); margin: 18px 0 24px; }
+    table { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 1.75; }
+    th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); }
+    th { font-size: 13px; font-weight: 700; background: var(--surface-strong); color: var(--ink); }
+    tr:last-child td { border-bottom: 0; }
+    th:last-child, td:last-child { border-right: 0; }
+    tbody tr:nth-child(even) { background: var(--surface); }
+    td:first-child { font-weight: 550; }
+    code { font: .85em/1.5 var(--mono); background: var(--surface-raised); color: var(--code-ink); border: 1px solid var(--line); padding: 2px 5px; overflow-wrap: anywhere; }
+    pre { font: 12px/1.75 var(--mono); background: var(--surface); color: var(--ink); border: 1px solid var(--line); padding: 16px; overflow: auto; margin: 16px 0 24px; tab-size: 2; }
+    pre code { font: inherit; background: none; border: 0; padding: 0; color: inherit; overflow-wrap: normal; }
+    .tag { display: inline-block; background: var(--accent-soft); color: var(--accent-ink); padding: 1px 6px; font-size: 12px; white-space: nowrap; }
+    .tag.gray { background: var(--surface-neutral); color: var(--ink-secondary); }
+    .tag.amber { background: var(--sand); color: var(--amber); }
+    figure { margin: 22px 0; }
+    .diagram { border: 1px solid var(--line); overflow: auto; background: var(--surface-raised); padding: 14px; }
+    .diagram svg { display: block; width: 100%; min-width: 750px; height: auto; }
+    .architecture-diagram { padding: 10px; }
+    .architecture-diagram svg { min-width: 1080px; }
+    .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 22px 0; }
+    .step { border: 1px solid var(--line); padding: 16px; background: var(--surface); font-size: 13px; }
+    .step b { display: block; font: 12px var(--mono); color: var(--accent); margin-bottom: 8px; }
+    .step strong { display: block; font-size: 15px; }
+    .two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+    .two-col > * { min-width: 0; }
+    .formula { background: var(--surface); border: 1px solid var(--line); padding: 16px 18px; font: 13px/1.9 var(--mono); overflow: auto; }
+    details { border: 1px solid var(--line); background: var(--surface-subtle); margin: 16px 0; padding: 0 16px; }
+    summary { cursor: pointer; padding: 13px 0; font-size: 14px; font-weight: 600; }
+    summary::marker { color: var(--accent); }
+    details[open] { padding-bottom: 16px; }
+    details pre { margin-bottom: 0; }
+    .milestone { display: grid; grid-template-columns: 55px 1fr; border-bottom: 1px solid var(--line); gap: 14px; padding: 20px 0; }
+    .milestone .id { font: 18px var(--mono); color: var(--accent); }
+    .milestone h3 { margin: 0 0 8px; }
+    .milestone p { margin: 0; font-size: 14px; }
+    .refs li { font-size: 14px; margin-bottom: 14px; }
+    .footer { margin-top: 48px; border-top: 1px solid var(--line); padding-top: 22px; font-size: 12px; color: var(--muted); }
+    .nowrap { white-space: nowrap; }
+
+    @media (max-width: 1100px) {
+      .shell { grid-template-columns: 260px minmax(0, 1fr); }
+      .sidebar nav a { padding: 9px 20px; font-size: 13px; }
+      .sidebar nav::before { padding-left: 20px; }
+      .sidebar .foot { padding-left: 20px; padding-right: 20px; }
+      main { padding: 28px 30px 56px; }
+      .cards { grid-template-columns: 1fr; gap: 16px; }
+      .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      .shell { display: block; }
+      .sidebar { position: relative; height: auto; }
+      .sidebar-header { padding: 17px 20px 16px; text-align: left; }
+      .brand { font-size: 20px; }
+      .sidebar .sub { margin-top: 5px; }
+      .sidebar nav { display: flex; flex: none; overflow-x: auto; gap: 0; padding: 10px 12px; }
+      .sidebar nav::before { display: none; }
+      .sidebar nav a { flex-shrink: 0; white-space: nowrap; padding: 8px 10px; font-size: 12px; }
+      .sidebar .foot { display: flex; align-items: center; flex-wrap: wrap; gap: 0 14px; padding: 10px 20px 13px; font-size: 10px; }
+      .theme-control { flex-basis: 100%; margin-bottom: 10px; }
+      .sidebar button { width: auto; margin-top: 8px; padding: 7px 11px; font-size: 12px; }
+      main { padding: 24px 20px 46px; }
+      .eyebrow { font-size: 10px; padding-bottom: 17px; margin-bottom: 22px; }
+      .hero h1 { font-size: 26px; }
+      .hero h1 br { display: initial; }
+      .hero .lead { font-size: 16px; }
+      .two-col { grid-template-columns: 1fr; }
+      .section { margin-bottom: 38px; }
+      .section-head { gap: 9px; }
+      .section-num { font-size: 12px; }
+      h2 { font-size: 22px; }
+      th, td { padding: 9px 10px; min-width: 110px; }
+      .chips { gap: 6px; }
+      .chip { font-size: 10px; }
+      .steps { grid-template-columns: 1fr; }
+      pre { padding: 13px; font-size: 11px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+    @media print {
+      @page { size: A4; margin: 16mm 14mm; }
+      html { scroll-behavior: auto; background: var(--white); }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { background: var(--white); font-size: 10pt; line-height: 1.65; }
+      .shell { display: block; }
+      .sidebar { display: none; }
+      main { max-width: none; padding: 0; background: var(--white); }
+      .eyebrow { margin-bottom: 20px; padding-bottom: 14px; }
+      .hero h1 { font-size: 23pt; }
+      .hero .lead { font-size: 11pt; }
+      .section { margin: 22px 0 28px; }
+      .section-head { break-after: avoid; }
+      h2 { font-size: 17pt; }
+      h3 { font-size: 12pt; break-after: avoid; }
+      .cards { grid-template-columns: repeat(3, 1fr); }
+      .card, .callout, .milestone, .step { break-inside: avoid; }
+      .steps { break-inside: avoid; }
+      table { font-size: 9pt; }
+      thead { display: table-header-group; }
+      tr { break-inside: avoid; }
+      .table-wrap { overflow: visible; }
+      th, td { padding: 7px 9px; min-width: 0; }
+      pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8pt; break-inside: auto; }
+      .diagram { overflow: visible; padding: 8px; break-inside: avoid; }
+      .diagram svg, .architecture-diagram svg { min-width: 0; }
+      figure { break-inside: avoid; }
+      .architecture-diagram { padding: 3px; }
+      .chip { font-size: 8pt; }
+      a { color: var(--accent); text-decoration: none; }
+      details { break-inside: auto; }
+      .caption, .small { font-size: 9pt; }
+      button { display: none; }
+      .footer { font-size: 8pt; }
+    }
+
+    .brand { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">ModelDock · 模型坞</div>
+      <div class="sub">插件化本地与远程模型测试平台</div>
+    </div>
+    <nav aria-label="文档目录">
+      <a href="#positioning"><span>01</span>产品定位与目标</a>
+      <a href="#users"><span>02</span>用户与核心场景</a>
+      <a href="#concepts"><span>03</span>产品对象与管理边界</a>
+      <a href="#scope"><span>04</span>版本范围与能力边界</a>
+      <a href="#navigation"><span>05</span>信息架构与界面</a>
+      <a href="#plugin-workflow"><span>06</span>插件与模型接入流程</a>
+      <a href="#remote-workflow"><span>07</span>SSH 远程测试体验</a>
+      <a href="#testing"><span>08</span>测试模式、指标与比较</a>
+      <a href="#states"><span>09</span>状态与异常反馈</a>
+      <a href="#acceptance"><span>10</span>验收标准</a>
+      <a href="#roadmap"><span>11</span>交付阶段与待确认项</a>
+    </nav>
+    <div class="foot">
+      <div class="theme-control" hidden><label for="theme-select">文档配色</label><select id="theme-select"><optgroup label="经典配色"><option value="classic">经典蓝</option><option value="slate">石墨灰</option><option value="forest">森林绿</option></optgroup><optgroup label="亮色配色"><option value="sky">蓝色 · 亮色</option><option value="mint">绿色 · 亮色</option><option value="yellow">黄色 · 亮色</option><option value="pink">粉色 · 亮色</option><option value="apricot" selected>橙色 · 默认</option><option value="lavender">紫色 · 亮色</option></optgroup><optgroup label="深色配色"><option value="dark">深色</option></optgroup></select></div>
+      更新于 2026-11-13<br>版本 0.1 方案草案<br>单文件 HTML · 支持离线阅读
+      <button type="button" id="print-button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7zM17 11h.01"/></svg>打印 / 保存 PDF</button>
+    </div>
+  </aside>
+  <main>
+    <header class="hero">
+      <div class="eyebrow">产品规划 / Windows 桌面端 / 待评审</div>
+      <h1>ModelDock 产品方案</h1>
+      <p class="lead">让模型开发者用 Python 接入模型，让测试人员在同一个 Windows 应用中完成本机或 SSH 远程推理、结果查看与性能比较。</p><div class="callout"><strong>本次交付是方案文档。</strong>功能、指标和里程碑均为拟定设计，尚未实现或完成兼容性验证。技术细节见同目录的 <a href="technical-plan.html">技术方案</a>。</div>
+    </header>
+    <section class="section" id="positioning">
+      <div class="section-head"><span class="section-num">01</span><h2>产品定位与目标</h2></div>
+<p>ModelDock（模型坞）是面向模型开发者和测试人员的 Windows 桌面应用。应用采用 Tauri 构建交互界面，以 Python 插件承载模型能力，通过 uv 维护插件运行环境，并支持把插件部署到 SSH 远程节点。</p>
+<p>首批场景为 YOLO 目标检测与 EfficientNet 图像分类。平台统一处理模型配置、文件输入、任务进度、可视化、性能统计和结果留存；模型插件实现加载、预处理、推理与后处理。</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">目标</th><th scope="col">产品表现</th></tr></thead><tbody><tr><td>降低接入成本</td><td>新增已支持任务类型的模型时，主要编写 Python 适配器和模型声明。</td></tr><tr><td>减少环境维护</td><td>安装、更新和修复运行环境归入插件管理，普通测试用户无需手动执行 Python 命令。</td></tr><tr><td>复用远程算力</td><td>在同一工作台选择本机或 SSH 节点，使用节点上的 CPU 或经过验证的 GPU 环境。</td></tr><tr><td>形成可追溯结果</td><td>每次测试保存配置快照、模型与插件版本、环境信息、结果和性能统计。</td></tr></tbody></table></div>
+<p>第一版聚焦推理测试。训练、微调、在线推理服务、分布式训练与插件商城不在首个完整版本的范围内。</p>
+    </section>
+
+    <section class="section" id="users">
+      <div class="section-head"><span class="section-num">02</span><h2>用户与核心场景</h2></div>
+<div class="table-wrap"><table><thead><tr><th scope="col">用户</th><th scope="col">需求</th><th scope="col">完成标准</th></tr></thead><tbody><tr><td>模型开发者</td><td>把分类或检测模型接入应用</td><td>按 SDK 实现适配器，声明依赖及支持模型，通过加载与结果协议检查。</td></tr><tr><td>测试人员</td><td>测试新权重的效果、速度和稳定性</td><td>导入权重与类别文件，完成单图或目录测试，导出可复核结果。</td></tr><tr><td>算法工程师</td><td>对比模型、输入尺寸、设备与运行后端</td><td>在已记录的测试配置下查看结果差异，明确不一致的比较条件。</td></tr><tr><td>远程算力使用者</td><td>使用 Linux GPU 主机进行测试</td><td>通过 SSH 部署插件，关联远端数据，查看进度并取回报告。</td></tr></tbody></table></div>
+<h3>典型使用过程</h3>
+<ol><li>开发者安装一个分类插件，插件声明支持 EfficientNet-B0、B1 等模型。</li><li>测试人员为 B0 导入两套业务权重与类别文件，创建两个模型实例。</li><li>在 Windows 本机执行单图检查，再选择 SSH 节点进行图片目录测试。</li><li>平台记录每次测试的模型、配置和节点信息，展示分类结果并导出报告。</li></ol>
+    </section>
+
+    <section class="section" id="concepts">
+      <div class="section-head"><span class="section-num">03</span><h2>产品对象与管理边界</h2></div>
+<div class="table-wrap"><table><thead><tr><th scope="col">对象</th><th scope="col">定义</th><th scope="col">关系</th></tr></thead><tbody><tr><td>运行节点</td><td>任务实际执行的位置：本机 Windows 或 SSH Linux 主机。</td><td>管理连接、工作目录、设备能力及可达状态。</td></tr><tr><td>插件</td><td>一组 Python 模型实现、依赖声明与支持模型目录。</td><td>插件是部署和环境维护的管理单元。</td></tr><tr><td>支持模型</td><td>插件明确支持的结构、任务类型、权重格式和默认配置。</td><td>一个插件可以声明多个支持模型。</td></tr><tr><td>模型实例</td><td>用户为某个支持模型配置的权重、类别与参数组合。</td><td>同一支持模型可以对应多个业务模型实例。</td></tr><tr><td>模型部署记录</td><td>某个模型实例在某节点上的权重及配置位置。</td><td>测试前必须存在有效的节点部署记录。</td></tr><tr><td>测试任务</td><td>在指定节点上，以配置快照运行指定模型实例。</td><td>关联插件版本、输入清单、日志、指标与产物。</td></tr></tbody></table></div><div class="callout"><strong>环境归属规则：</strong>一个节点上的一个插件只有一个启用中的运行环境。相同插件部署到两个节点时，各自维护环境。模型实例共用所属插件在该节点上的环境。</div><figure><div class="diagram"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 345" role="img" aria-labelledby="product-objects-title product-objects-desc"><title id="product-objects-title">插件与模型关系</title><desc id="product-objects-desc">插件声明支持模型；用户导入权重形成模型实例；测试任务选择节点上的部署记录。</desc><defs><marker id="product-objects-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="var(--accent, #b84934)"/></marker></defs><path d="M265 77 L325 77" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#product-objects-arrow)"/><text x="295.0" y="68.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">声明</text><path d="M580 77 L640 77" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#product-objects-arrow)"/><text x="610.0" y="68.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">配置</text><path d="M265 270 L325 270" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#product-objects-arrow)"/><text x="295.0" y="261.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">安装</text><path d="M580 270 L640 270" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#product-objects-arrow)"/><text x="610.0" y="261.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">执行</text><path d="M772 125 L772 215" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#product-objects-arrow)"/><text x="804.0" y="161.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">选择</text><rect x="20" y="30" width="245" height="95" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="142.5" y="71.5" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">插件</text><text x="142.5" y="96.5" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">代码 / 依赖 / 模型目录</text><rect x="335" y="30" width="245" height="95" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="457.5" y="71.5" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">支持模型</text><text x="457.5" y="96.5" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">EfficientNet-B0 / B1</text><rect x="650" y="30" width="245" height="95" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="772.5" y="71.5" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">模型实例</text><text x="772.5" y="96.5" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">业务权重 / 类别 / 参数</text><rect x="20" y="225" width="245" height="90" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="142.5" y="264.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">运行节点</text><text x="142.5" y="289.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">本机 Windows / SSH Linux</text><rect x="335" y="225" width="245" height="90" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="457.5" y="264.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">插件安装</text><text x="457.5" y="289.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">该节点专属运行环境</text><rect x="650" y="225" width="245" height="90" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="772.5" y="264.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">测试任务</text><text x="772.5" y="289.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">实例部署 / 数据 / 配置快照</text></svg></div><figcaption class="caption">插件声明支持模型；用户导入权重形成模型实例；测试任务选择节点上的部署记录。</figcaption></figure>
+<p>运行环境显示在插件的节点安装详情中，提供准备、检查和修复操作。应用不设置独立的全局“环境管理”主导航。节点离线不会删除其插件、模型或历史记录。</p>
+    </section>
+
+    <section class="section" id="scope">
+      <div class="section-head"><span class="section-num">04</span><h2>版本范围与能力边界</h2></div>
+<div class="table-wrap"><table><thead><tr><th scope="col">能力</th><th scope="col">首个完整版本</th><th scope="col">后续扩展</th></tr></thead><tbody><tr><td>桌面平台</td><td>Windows 10/11 x64；界面中文优先。</td><td>按实际需求扩展其他桌面系统。</td></tr><tr><td>节点</td><td>本机 Windows；SSH Linux x86_64；一个任务在一个节点执行。</td><td>更多系统、节点分组和批量调度。</td></tr><tr><td>任务类型</td><td>图像分类、目标检测。</td><td>分割、姿态、OCR 等，需要新增结果协议及视图。</td></tr><tr><td>插件</td><td>本地插件包导入、校验、节点安装、更新、卸载、环境修复。</td><td>插件仓库、签名分发与依赖镜像管理。</td></tr><tr><td>参考模型</td><td>EfficientNet-B0/B1 的约定分类导出；YOLOv8n/s 的一种明确检测导出格式。</td><td>更多结构及 YOLO 导出变体，逐项适配。</td></tr><tr><td>权重格式</td><td>参考插件先支持 ONNX；格式由各插件声明。</td><td>带独立依赖的 PyTorch 插件等。</td></tr><tr><td>输入</td><td>单张图片和图片目录，支持本机上传及远端已有目录。</td><td>视频、摄像头、其他模态。</td></tr><tr><td>计算设备</td><td>CPU 作为基础验收；NVIDIA GPU 按已验证的插件运行方案开放。</td><td>更多 GPU 后端和硬件组合。</td></tr><tr><td>测试与报告</td><td>单图、批量、性能测试、历史记录、JSON/CSV 与结果图片。</td><td>标注数据评估、跨任务比较及 HTML 汇总报告。</td></tr></tbody></table></div>
+<p>平台只列出插件已声明并通过相应节点检查的模型与运行方式。ONNX 文件格式相同不代表预处理、输出语义和后处理相同；自定义权重必须与所选支持模型的约定匹配。</p>
+<p>首次准备环境通常需要下载 Python 与依赖。环境和权重准备完成后，本机测试可以离线运行；远程测试仍需要能够连接对应 SSH 节点。完整离线安装包作为后续交付能力。</p>
+    </section>
+
+    <section class="section" id="navigation">
+      <div class="section-head"><span class="section-num">05</span><h2>信息架构与界面</h2></div>
+<div class="table-wrap"><table><thead><tr><th scope="col">入口</th><th scope="col">主要内容</th><th scope="col">关键操作</th></tr></thead><tbody><tr><td>测试工作台</td><td>节点与模型选择、图片预览、结果列表、进度和指标。</td><td>单图测试、批量测试、停止、导出。</td></tr><tr><td>插件管理</td><td>插件版本、支持模型列表、各节点安装及环境状态。</td><td>导入、安装到节点、更新、修复环境、卸载。</td></tr><tr><td>模型管理</td><td>模型实例、类别映射、权重指纹、节点部署情况。</td><td>创建实例、导入权重、关联远端权重、加载验证。</td></tr><tr><td>运行节点</td><td>本机与 SSH 连接、设备信息、工作目录、能力检查。</td><td>新增节点、连接检查、刷新设备、移除连接记录。</td></tr><tr><td>测试记录</td><td>配置快照、任务状态、样本结果、日志、产物和指标。</td><td>查询、查看、按原配置创建新任务、比较、导出。</td></tr></tbody></table></div>
+<h3>测试工作台布局</h3>
+<pre><code class="language-text">顶部：运行节点 / 模型实例 / 运行方式 / 开始 / 停止
+左侧：输入选择、任务参数、模型参数
+中间：图片、检测框或分类结果预览
+右侧：类别、置信度、耗时、当前任务状态
+底部：输入列表、逐项结果、汇总统计、日志</code></pre>
+<p>常用参数直接展示，高级参数折叠。参数由插件声明的配置描述生成；节点地址、依赖细节和开发日志放在详情页。远程图片预览采用按需获取，避免默认下载整套结果。</p>
+<p>应用名称为 ModelDock · 模型坞。图标方向为“蓝色模型方块 + 青绿色坞槽”，适配 Windows 小尺寸图标；当前仅为概念设计。</p>
+    </section>
+
+    <section class="section" id="plugin-workflow">
+      <div class="section-head"><span class="section-num">06</span><h2>插件与模型接入流程</h2></div>
+<h3>插件开发者</h3>
+<ol><li>选择已有任务协议，实现模型加载、推理与资源释放接口。</li><li>在插件清单中声明支持模型、权重格式、参数描述及兼容平台。</li><li>为运行方案提供 Python 版本约定、依赖项目及 uv 锁文件。</li><li>使用 SDK 检查输入输出和错误格式，打包为可导入插件包。</li></ol>
+<h3>测试人员</h3>
+<ol><li>导入插件包，查看插件来源、版本、支持模型和依赖要求。</li><li>选择目标节点安装；平台准备该插件的专属环境并执行健康检查。</li><li>从支持模型列表选择一个模型，导入权重、类别与必要配置。</li><li>执行加载验证，再进入测试工作台。</li></ol>
+<div class="table-wrap"><table><thead><tr><th scope="col">操作</th><th scope="col">期望行为</th></tr></thead><tbody><tr><td>切换 CPU/GPU 运行方案</td><td>插件在该节点切换到一个新的环境配置；完成检查后启用，旧环境在切换完成后清理。</td></tr><tr><td>更新插件</td><td>显示版本与依赖变化，等待运行任务结束后更新；检查失败时保留可用版本。</td></tr><tr><td>修复环境</td><td>按锁文件重建，不修改权重、类别文件和历史记录。</td></tr><tr><td>卸载某节点上的插件</td><td>清理该节点插件代码及专属环境；权重和测试记录保留，实例显示不可运行。</td></tr><tr><td>同一模型导入不同权重</td><td>形成不同模型实例，共用插件运行环境，分别记录权重指纹。</td></tr></tbody></table></div>
+<p>插件包包含可执行 Python 代码，导入页说明这一性质及运行位置。首版用于可信插件，运行环境隔离用于依赖管理，不承诺隔离插件对用户文件或网络的访问。</p>
+    </section>
+
+    <section class="section" id="remote-workflow">
+      <div class="section-head"><span class="section-num">07</span><h2>SSH 远程测试体验</h2></div>
+<ol><li>新增 SSH 节点，配置主机、端口、用户、身份验证方式和可写工作目录。</li><li>首次连接核对主机指纹，检查主机平台、Python 准备条件、磁盘和设备能力。</li><li>选择插件并安装到该节点，查看部署阶段、下载进度和失败原因。</li><li>选择上传本机文件，或关联该节点已有的权重与数据目录。</li><li>启动测试，持续查看进度、日志和按需预览。</li><li>任务完成后下载报告及所需产物；大文件可保留远端，状态显示是否已取回。</li></ol>
+<div class="callout"><strong>连接状态与任务状态分别显示。</strong>SSH 断开时提示“节点不可达，任务状态待确认”。已提交的任务可能仍在运行；应用不会自动重复提交。重连后按任务编号恢复查询。</div>
+<p>首版支持的远程节点需要通过后台任务存活检查。任务可在连接断开后继续运行，但主机重启或工作进程崩溃后的自动续算不属于首版承诺；系统恢复后应报告中断并允许新建重试任务。</p>
+<p>移除节点仅删除应用中的连接配置，不会自动删除远端模型、任务或结果。远端清理由用户在节点详情中明确执行，并显示将清理的内容。</p>
+    </section>
+
+    <section class="section" id="testing">
+      <div class="section-head"><span class="section-num">08</span><h2>测试模式、指标与比较</h2></div>
+<div class="table-wrap"><table><thead><tr><th scope="col">模式</th><th scope="col">输出</th><th scope="col">限制</th></tr></thead><tbody><tr><td>单图测试</td><td>检测框、类别、置信度、图片级耗时。</td><td>用于加载与效果检查，不把单次耗时当作稳定性能结论。</td></tr><tr><td>图片目录测试</td><td>逐项结果、进度、成功与失败统计、结果图片。</td><td>单项失败可以继续处理；全部失败则任务失败。</td></tr><tr><td>性能测试</td><td>预热后统计平均值、P50、P95 和吞吐量。</td><td>固定输入、设备、后端与并发配置，明确样本数。</td></tr><tr><td>精度评估（后续）</td><td>分类 Top-1/Top-K；检测 mAP@0.5 与 mAP@0.5:0.95。</td><td>要求标注、类别映射和数据集格式明确；失败样本不得被静默忽略。</td></tr></tbody></table></div>
+<p>默认性能配置拟定为预热 10 次、正式测量 100 个样本执行，batch=1、单工作进程。配置可调整；重复使用输入时报告唯一图片数、执行次数和缓存策略。</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">指标</th><th scope="col">呈现规则</th></tr></thead><tbody><tr><td>模型推理耗时</td><td>仅统计推理阶段，GPU 后端按要求同步；插件未提供可靠分段能力时显示“不支持”。</td></tr><tr><td>图片处理耗时</td><td>读取/解码、预处理、推理与后处理分段记录，给出统一边界。</td></tr><tr><td>处理吞吐量</td><td>根据实际处理时间窗口计算成功样本数/秒，独立于上传和下载。</td></tr><tr><td>任务完成耗时</td><td>分别列出排队、准备、处理、产物写入和传输耗时。</td></tr><tr><td>资源占用</td><td>记录采样范围内的内存峰值；支持时记录显存及设备信息。</td></tr><tr><td>精度</td><td>无标注时显示“未评估”，不显示猜测准确率。</td></tr></tbody></table></div>
+<p>比较页至少显示输入尺寸、权重指纹、精度类型、运行后端、设备、线程、批大小、插件版本及数据清单指纹。条件不一致时给出差异标识。外部 GPU 负载等未受控因素列为测试条件限制。</p>
+    </section>
+
+    <section class="section" id="states">
+      <div class="section-head"><span class="section-num">09</span><h2>状态与异常反馈</h2></div>
+<div class="table-wrap"><table><thead><tr><th scope="col">对象</th><th scope="col">主要状态</th><th scope="col">恢复入口</th></tr></thead><tbody><tr><td>插件节点安装</td><td>未安装、准备中、检查中、可用、失败、更新中、卸载中。</td><td>查看阶段日志、重试、修复；运行任务期间阻止破坏性变更。</td></tr><tr><td>模型部署</td><td>未配置、待检查、可用、不兼容、文件缺失。</td><td>重新选择权重、修正类别或配置、再次验证。</td></tr><tr><td>节点</td><td>未知、连接中、在线、不可达。</td><td>重新连接、检查认证及主机指纹。</td></tr><tr><td>任务</td><td>排队、准备、运行、请求取消、成功、部分失败、失败、已取消。</td><td>查看结果与原因；重试生成新任务并关联原记录。</td></tr></tbody></table></div>
+<p>错误信息包含发生阶段、可读原因和下一步操作。例如依赖下载失败提供重试入口；模型输出不匹配指出模型约定；显存不足建议检查设备与模型配置。用户主动停止后，界面保持“请求取消”直到执行端确认终态。</p>
+<p>批量任务中，部分样本失败时保留成功结果并标记“部分失败”，报告失败清单。中途取消仍保留已完成样本，完整性标为未完成。</p>
+    </section>
+
+    <section class="section" id="acceptance">
+      <div class="section-head"><span class="section-num">10</span><h2>验收标准</h2></div>
+<div class="table-wrap"><table><thead><tr><th scope="col">编号</th><th scope="col">场景</th><th scope="col">验收结果</th></tr></thead><tbody><tr><td>P-01</td><td>干净的受支持 Windows 测试机</td><td>安装并启动应用，无需用户预装 Python；首次在线准备有明确阶段提示。</td></tr><tr><td>P-02</td><td>插件支持模型目录</td><td>插件详情列出 EfficientNet-B0/B1 或 YOLOv8n/s 等已声明模型、任务、格式与兼容限制。</td></tr><tr><td>P-03</td><td>同节点安装两个插件</td><td>各自拥有独立环境，插件环境修复不影响另一插件，也不删除模型和历史。</td></tr><tr><td>P-04</td><td>导入两套分类权重</td><td>创建两个模型实例、独立类别映射，在同一插件环境中加载与测试。</td></tr><tr><td>P-05</td><td>分类及检测测试</td><td>参考样本结果与参考实现按约定容差一致；检测框映射回原图坐标。</td></tr><tr><td>P-06</td><td>批量包含损坏图片</td><td>继续执行其他图片，逐项记录错误，终态与成功/失败计数一致。</td></tr><tr><td>P-07</td><td>性能与报告</td><td>预热不混入正式统计；报告包含计时边界、样本数、环境及配置快照；可导出 JSON/CSV。</td></tr><tr><td>P-08</td><td>SSH 节点部署</td><td>在经过支持检查的 Linux 节点安装插件，复用已有远端权重/数据并完成测试。</td></tr><tr><td>P-09</td><td>SSH 中断与恢复</td><td>任务继续运行；重连获取同一任务的状态与结果，没有重复执行；不支持存活的节点被明确识别。</td></tr><tr><td>P-10</td><td>停止与失败恢复</td><td>取消经执行端确认；工作进程异常有明确终态；重新测试创建新记录。</td></tr><tr><td>P-11</td><td>文件和凭据</td><td>节点身份验证信息不进入报告与普通日志；输出只写入配置的数据目录。</td></tr><tr><td>P-12</td><td>离线复用</td><td>已有环境和权重的本机测试不要求联网，不自动触发依赖更新。</td></tr></tbody></table></div>
+<p>测试覆盖固定版本的 Windows 10/11 x64、选定 Linux x86_64 发行版和至少一个已验证 NVIDIA 运行方案。具体版本、最低硬件配置及性能目标在实现阶段通过基线测试确定，当前不承诺通用 FPS 或任意驱动兼容。</p>
+    </section>
+
+    <section class="section" id="roadmap">
+      <div class="section-head"><span class="section-num">11</span><h2>交付阶段与待确认项</h2></div>
+<div class="table-wrap"><table><thead><tr><th scope="col">阶段</th><th scope="col">交付内容</th><th scope="col">进入下一阶段的条件</th></tr></thead><tbody><tr><td>M0：协议与接入验证</td><td>插件清单、SDK、两种结果协议及 uv 环境验证。</td><td>两个参考插件能被相同运行器加载，依赖可重建。</td></tr><tr><td>M1：本机测试闭环</td><td>Windows 应用、插件与模型管理、单图/批量/性能、历史与导出。</td><td>通过 P-01 至 P-07、P-10 至 P-12 的本机部分。</td></tr><tr><td>M2：远程节点闭环</td><td>SSH 部署、数据关联与传输、后台任务、重连与结果取回。</td><td>通过 P-08、P-09 及远程停止、失败恢复检查。</td></tr><tr><td>M3：首个完整版本</td><td>稳定性、选定 GPU 方案、安装包与使用说明。</td><td>完整验收矩阵通过，已知限制被记录。</td></tr><tr><td>后续迭代</td><td>标注评估、视频输入、更多任务、完整离线包与插件分发。</td><td>按实际使用需求确定顺序。</td></tr></tbody></table></div>
+<p>实施前仍需确定：参考权重与样本的可分发来源、最终 YOLO 输出约定、首批 GPU/驱动组合、SSH 认证实现与受支持 Linux 版本，以及结果保留和缓存清理策略。这些不改变既定的插件归属与节点执行模型。</p>
+<p>文档样式采用用户提供的 <a href="https://github.com/whoarei/skills/tree/f8d312ed5e5f091e80562cf463758787e176d208/rtd-html-docs">rtd-html-docs skill</a>。页面包含全部样式、脚本和图表；外部链接仅作来源引用。</p>
+    </section>
+    <footer class="footer">ModelDock · 产品方案草案 · 2026-11-13<br>单文件 HTML · 支持离线阅读与打印 / 保存 PDF</footer>
+  </main>
+</div>
+<script>
+  (() => {
+    const root = document.documentElement;
+    const themeSelect = document.getElementById('theme-select');
+    if (themeSelect) {
+      themeSelect.value = root.dataset.theme || 'apricot';
+      themeSelect.closest('.theme-control').hidden = false;
+      themeSelect.addEventListener('change', () => {
+        root.dataset.theme = themeSelect.value;
+        try {
+          const key = 'rtd-html-docs:theme:' + (root.dataset.documentId || location.pathname);
+          localStorage.setItem(key, themeSelect.value);
+        } catch (_) { /* Keep the choice for this visit when storage is blocked. */ }
+      });
+    }
+    const printButton = document.getElementById('print-button');
+    if (printButton) printButton.addEventListener('click', () => window.print());
+    let printState = null;
+    window.addEventListener('beforeprint', () => {
+      if (printState) return;
+      printState = Array.from(document.querySelectorAll('details'), item => [item, item.open]);
+      printState.forEach(([item]) => { item.open = true; });
+    });
+    window.addEventListener('afterprint', () => {
+      if (!printState) return;
+      printState.forEach(([item, wasOpen]) => { item.open = wasOpen; });
+      printState = null;
+    });
+    const links = Array.from(document.querySelectorAll('.sidebar nav a'));
+    const sections = Array.from(document.querySelectorAll('main > section[id]'));
+    let scheduled = false;
+    function syncDirectory() {
+      scheduled = false;
+      if (!sections.length) return;
+      let current = sections[0];
+      for (const section of sections) {
+        if (section.getBoundingClientRect().top <= Math.min(160, innerHeight * .25)) current = section;
+        else break;
+      }
+      links.forEach(link => {
+        const active = link.getAttribute('href') === '#' + current.id;
+        link.classList.toggle('active', active);
+        if (active) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
+    }
+    function scheduleDirectory() {
+      if (!scheduled) { scheduled = true; requestAnimationFrame(syncDirectory); }
+    }
+    window.addEventListener('scroll', scheduleDirectory, { passive: true });
+    window.addEventListener('resize', scheduleDirectory);
+    window.addEventListener('load', scheduleDirectory);
+    syncDirectory();
+  })();
+</script>
+</body>
+</html>
