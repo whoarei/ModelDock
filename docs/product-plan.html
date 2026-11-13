@@ -709,7 +709,7 @@
     <header class="hero">
       <div class="eyebrow">产品规划 / Windows 桌面端 / 待评审</div>
       <h1>ModelDock 产品方案</h1>
-      <p class="lead">让模型开发者用 Python 接入模型，让测试人员在同一个 Windows 应用中完成本机或 SSH 远程推理、结果查看与性能比较。</p><div class="callout"><strong>本次交付是方案文档。</strong>功能、指标和里程碑均为拟定设计，尚未实现或完成兼容性验证。技术细节见同目录的 <a href="technical-plan.html">技术方案</a>。</div>
+      <p class="lead">让模型开发者用 Python 接入模型，让测试人员在同一个 Windows 应用中完成本机或 SSH 远程推理、结果查看与性能比较。</p><div class="callout"><strong>本次交付是方案文档。</strong>功能、指标和里程碑均为拟定设计，尚未实现或完成兼容性验证。技术细节见同目录的 <a href="technical-plan.html">技术方案</a>，插件作者参考独立的 <a href="python-plugin-protocol.html">Python 插件协议</a>。</div>
     </header>
     <section class="section" id="positioning">
       <div class="section-head"><span class="section-num">01</span><h2>产品定位与目标</h2></div>
@@ -754,6 +754,7 @@
 
     <section class="section" id="plugin-workflow">
       <div class="section-head"><span class="section-num">06</span><h2>插件与模型接入流程</h2></div>
+<p>开发者的清单、Python 接口和结果约定见 <a href="python-plugin-protocol.html">Python 插件协议</a>；本节说明产品侧操作流程。</p>
 <h3>插件开发者</h3>
 <ol><li>选择已有任务协议，实现模型加载、推理与资源释放接口。</li><li>在插件清单中声明支持模型、权重格式、参数描述及兼容平台。</li><li>为运行方案提供 Python 版本约定、依赖项目及 uv 锁文件。</li><li>使用 SDK 检查输入输出和错误格式，打包为可导入插件包。</li></ol>
 <h3>测试人员</h3>
