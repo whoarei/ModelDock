@@ -1,4 +1,5 @@
 import json
+import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 
@@ -162,8 +163,23 @@ def test_input_change_invalidates_report(classifier, fixtures, tmp_path):
     wait_for(lambda: store.job(job["id"]), lambda t: t["state"] == "RUNNING")
     replacement = tmp_path / "replacement.png"
     replacement.write_bytes((fixtures / "blue.png").read_bytes())
-    replacement.replace(image)
-    result = finish(job["id"])
+    try:
+        # Windows readers briefly deny FILE_SHARE_DELETE. Retry during the next
+        # processing gap rather than making the test depend on an open handle.
+        deadline = time.monotonic() + 5
+        while True:
+            try:
+                replacement.replace(image)
+                break
+            except PermissionError:
+                if time.monotonic() >= deadline:
+                    raise
+                time.sleep(0.005)
+        result = finish(job["id"])
+    finally:
+        if store.job(job["id"])["state"] not in store.TERMINAL:
+            api("cancel_task", dict(task_id=job["id"]))
+            finish(job["id"])
     assert (
         result["state"] == "FAILED" and result["report"]["fatal_error"]["code"] == "INPUT_CHANGED"
     )

@@ -2,7 +2,8 @@ from modeldock.cli import api
 from modeldock import store
 
 
-def test_update_waits_for_tasks_and_environment_operations(environment):
+def test_update_waits_for_tasks_and_environment_operations(tmp_path, monkeypatch):
+    monkeypatch.setenv("MODELDOCK_DATA_DIR", str(tmp_path))
     assert api("update_readiness", {})["ready"]
     store.put("installation", "update-test", dict(id="update-test", state="uninstalling"))
     try:
