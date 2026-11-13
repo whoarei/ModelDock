@@ -19,7 +19,7 @@ def reconcile():
         if worker and expected not in (None, "unknown") and process_birth(worker) == expected:
             try:
                 if sys.platform == "win32":
-                    subprocess.run(
+                    store.run_process(
                         ["taskkill", "/PID", str(worker), "/T", "/F"],
                         capture_output=True,
                         timeout=15,

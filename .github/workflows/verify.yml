@@ -64,6 +64,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: apps/desktop/src-tauri
+          cache-on-failure: true
       - run: uv sync --locked
       - run: uv run pytest
       - run: uv run python scripts/prepare_resources.py --rust-licenses
@@ -80,6 +81,7 @@ jobs:
           name: windows-native-test-results
           path: test-results/native-ui
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: ModelDock-0.1.0-windows-x64
           path: apps/desktop/src-tauri/target/release/bundle/nsis/*-setup.exe

@@ -7,7 +7,6 @@ import json
 import re
 import shlex
 import shutil
-import subprocess
 import time
 import zipfile
 from pathlib import Path
@@ -55,7 +54,7 @@ def scan_node(args):
     executable = shutil.which("ssh-keyscan")
     if not executable:
         raise ValueError("未找到 ssh-keyscan，请启用 Windows OpenSSH 客户端")
-    process = subprocess.run(
+    process = store.run_process(
         [executable, "-T", "5", "-p", str(value["port"]), value["host"]],
         capture_output=True,
         text=True,
@@ -131,7 +130,7 @@ def ssh(value, command, payload=None, timeout=60):
     executable = shutil.which("ssh")
     if not executable:
         raise ValueError("未找到 OpenSSH 客户端")
-    process = subprocess.run(
+    process = store.run_process(
         [
             executable,
             *options(value),
@@ -274,7 +273,7 @@ def upload(value, source):
         return '"' + str(path).replace("\\", "\\\\").replace('"', '\\"') + '"'
 
     host = "[" + value["host"] + "]" if ":" in value["host"] else value["host"]
-    process = subprocess.run(
+    process = store.run_process(
         [
             executable,
             *options(value),

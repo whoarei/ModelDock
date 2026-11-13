@@ -32,11 +32,14 @@ const app = spawn(binary, [], {
   env: {
     ...process.env,
     MODELDOCK_DATA_DIR: data,
+    MODELDOCK_WEBVIEW_DEBUG_PORT: "9222",
+    WEBVIEW2_USER_DATA_FOLDER: path.join(data, "webview2"),
     WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: "--remote-debugging-port=9222",
   },
   stdio: "ignore",
 });
 let browser;
+let page;
 try {
   const deadline = Date.now() + 90000;
   while (Date.now() < deadline) {
@@ -49,7 +52,6 @@ try {
     await new Promise((r) => setTimeout(r, 500));
   }
   browser = await chromium.connectOverCDP("http://127.0.0.1:9222");
-  let page;
   for (let attempt = 0; attempt < 60; attempt++) {
     page = browser
       .contexts()
@@ -197,6 +199,25 @@ try {
     ),
   );
   console.log("Native Windows smoke test passed.");
+} catch (error) {
+  if (page)
+    await page
+      .screenshot({ path: path.join(output, "failure.png"), fullPage: true })
+      .catch(() => {});
+  await fs.writeFile(path.join(output, "failure.txt"), String(error));
+  try {
+    const diagnostics = execFileSync(
+      "powershell.exe",
+      [
+        "-NoProfile",
+        "-Command",
+        "Get-CimInstance Win32_Process | Where-Object { $_.Name -in @('modeldock.exe','msedgewebview2.exe') } | Select-Object Name,ProcessId,SessionId,CommandLine | ConvertTo-Json",
+      ],
+      { encoding: "utf8" },
+    );
+    await fs.writeFile(path.join(output, "processes.json"), diagnostics);
+  } catch {}
+  throw error;
 } finally {
   if (browser) await browser.close().catch(() => {});
   app.kill();

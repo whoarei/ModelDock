@@ -37,7 +37,7 @@ def local(command, args):
         return dict(
             platform=store.platform_id(),
             python=sys.version.split()[0],
-            uv=subprocess.check_output(
+            uv=store.command_output(
                 [store.uv_binary(), "--version"], text=True, encoding="utf-8", errors="replace"
             ).strip(),
         )

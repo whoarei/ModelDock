@@ -163,7 +163,7 @@ def prepare(ident):
         env.pop("VIRTUAL_ENV", None)
         # All versions come from the plugin's lockfile; no implicit upgrades.
         with logfile.open("wb") as output:
-            process = subprocess.run(
+            process = store.run_process(
                 [uv, "sync", "--project", str(project), "--locked", "--no-dev"],
                 env=env,
                 stdout=output,
@@ -188,11 +188,11 @@ def prepare(ident):
             + repr(name)
             + "); assert all(callable(getattr(cls,k,None)) for k in ('load','predict','close'))"
         )
-        subprocess.run([python, "-c", check], check=True, capture_output=True, timeout=30)
-        uv_version = subprocess.check_output(
+        store.run_process([python, "-c", check], check=True, capture_output=True, timeout=30)
+        uv_version = store.command_output(
             [uv, "--version"], text=True, encoding="utf-8", errors="replace"
         ).strip()
-        python_version = subprocess.check_output(
+        python_version = store.command_output(
             [python, "--version"], text=True, encoding="utf-8", errors="replace"
         ).strip()
         fingerprint = hashlib.sha256(

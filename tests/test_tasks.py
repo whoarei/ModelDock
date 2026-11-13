@@ -144,3 +144,28 @@ def test_retry_preserves_configuration_and_rejects_changed_input(classifier, fix
     image.write_bytes((fixtures / "blue.png").read_bytes())
     with pytest.raises(ValueError, match="输入文件已变化"):
         api("retry_task", dict(task_id=original["id"]))
+
+
+def test_input_change_invalidates_report(classifier, fixtures, tmp_path):
+    image = tmp_path / "changing.png"
+    image.write_bytes((fixtures / "red.png").read_bytes())
+    job = api(
+        "start_task",
+        dict(
+            model_instance_id=classifier["id"],
+            paths=[str(image)],
+            mode="benchmark",
+            iterations=200,
+            warmup=0,
+        ),
+    )
+    wait_for(lambda: store.job(job["id"]), lambda t: t["state"] == "RUNNING")
+    replacement = tmp_path / "replacement.png"
+    replacement.write_bytes((fixtures / "blue.png").read_bytes())
+    replacement.replace(image)
+    result = finish(job["id"])
+    assert (
+        result["state"] == "FAILED" and result["report"]["fatal_error"]["code"] == "INPUT_CHANGED"
+    )
+    assert not result["report"]["complete"]
+    assert result["report"]["input_tensors"][0]["shape"] == [1, 3, 224, 224]

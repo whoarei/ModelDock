@@ -1,5 +1,6 @@
 export type Params = Record<string, string | number | boolean | object>;
 export interface ModelSpec {
+  weight_formats?: string[];
   id: string;
   name: string;
   task: string;
@@ -20,6 +21,7 @@ export interface Plugin {
   };
 }
 export interface Installation {
+  plugin_digest: string;
   id: string;
   state: string;
   profile_id: string;
@@ -40,7 +42,7 @@ export interface Model {
   labels?: string[];
   weight: { sha256: string; size: number; path: string };
   error?: string;
-  validation?: { parameters: Params };
+  validation?: { parameters: Params; providers?: string[] | null };
 }
 export interface Node {
   id: string;
@@ -131,6 +133,9 @@ export const terminal = new Set([
   "CANCELLED",
 ]);
 export const stateLabel: Record<string, string> = {
+  unavailable: "环境或模型未就绪",
+  outdated: "需要更新",
+  uninstalling: "卸载中",
   QUEUED: "排队中",
   PREPARING: "准备中",
   RUNNING: "运行中",

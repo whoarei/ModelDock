@@ -275,6 +275,19 @@ def run(ident):
         for row in records:
             output.write(json.dumps(row, ensure_ascii=False, allow_nan=False) + "\n")
     dependencies = {}
+    verification_started = time.perf_counter_ns()
+    try:
+        if any(store.digest(item["path"]) != item["sha256"] for item in config["inputs"]):
+            raise ValueError("测试期间输入文件发生变化")
+    except Exception as exc:
+        fatal = dict(
+            code="INPUT_CHANGED",
+            message="输入文件验证失败：" + str(exc),
+            phase="finalize",
+            scope="task",
+            retryable=False,
+        )
+    metrics["input_verification_ms"] = (time.perf_counter_ns() - verification_started) / 1e6
     for name in ("modeldock-sdk", "onnxruntime", "numpy", "Pillow"):
         try:
             dependencies[name] = importlib.metadata.version(name)
@@ -285,6 +298,9 @@ def run(ident):
         version="0.1.0",
         task_id=ident,
         parameters=params,
+        model_configuration=config.get("model_configuration"),
+        input_tensors=config["instance"].get("validation", {}).get("inputs", []),
+        providers=config["instance"].get("validation", {}).get("providers"),
         model_name=config["instance"]["name"],
         model_id=config["instance"]["model_id"],
         plugin_version=config["plugin"]["manifest"]["version"],

@@ -267,15 +267,15 @@ export default function App() {
     >([]),
     [compareIds, setCompareIds] = useState<string[]>([]),
     [comparison, setComparison] = useState<Task[]>([]);
-  const refreshing = useRef(false),
+  const refreshing = useRef<Record<string, boolean>>({}),
     nodeRef = useRef(nodeId);
   nodeRef.current = nodeId;
   const handleError = (value: unknown) =>
     setError(value instanceof Error ? value.message : String(value));
   async function refresh() {
-    if (refreshing.current) return;
-    refreshing.current = true;
     const current = nodeRef.current;
+    if (refreshing.current[current]) return;
+    refreshing.current[current] = true;
     try {
       const value = await api<Snapshot>("state", { node_id: current });
       if (current === nodeRef.current) {
@@ -283,9 +283,9 @@ export default function App() {
         setNodes(value.nodes);
       }
     } catch (e) {
-      handleError(e);
+      if (current === nodeRef.current) handleError(e);
     } finally {
-      refreshing.current = false;
+      delete refreshing.current[current];
     }
   }
   async function perform(name: string, action: () => Promise<unknown>) {
@@ -302,6 +302,7 @@ export default function App() {
   }
   useEffect(() => {
     setSnapshot(null);
+    setError("");
     setTaskId("");
     setDetail(null);
     setPaths([]);
@@ -318,7 +319,10 @@ export default function App() {
       return;
     }
     let live = true;
+    let pending = false;
     async function poll() {
+      if (pending) return;
+      pending = true;
       try {
         const value = await api<Task>("task_detail", {
           node_id: nodeId,
@@ -327,6 +331,8 @@ export default function App() {
         if (live) setDetail(value);
       } catch (e) {
         if (live) handleError(e);
+      } finally {
+        pending = false;
       }
     }
     poll();
@@ -352,7 +358,20 @@ export default function App() {
     plugins = snapshot?.plugins || [],
     tasks = snapshot?.tasks || [],
     installations = snapshot?.installations || [];
-  const readyModels = models.filter((m) => m.state === "ready"),
+  const readyForPlugin = (id: string) =>
+    installations.some(
+      (i) =>
+        i.id === id &&
+        i.state === "ready" &&
+        i.plugin_digest === plugins.find((p) => p.id === id)?.digest,
+    );
+  const canRunModel = (model: Snapshot["models"][number]) =>
+    model.state === "ready" &&
+    readyForPlugin(model.plugin_id) &&
+    !!plugins
+      .find((p) => p.id === model.plugin_id)
+      ?.manifest.models.some((m) => m.id === model.model_id);
+  const readyModels = models.filter(canRunModel),
     currentModel = models.find((m) => m.id === selectedModel),
     currentPlugin = plugins.find((p) => p.id === currentModel?.plugin_id),
     spec = currentPlugin?.manifest.models.find(
@@ -360,10 +379,30 @@ export default function App() {
     );
   const formPlugin = plugins.find((p) => p.id === modelPlugin),
     formSpec = formPlugin?.manifest.models.find((m) => m.id === modelType);
+  const providers =
+    currentModel?.validation?.providers ||
+    currentPlugin?.manifest.runtime_profiles.find(
+      (p) =>
+        p.id ===
+        installations.find((i) => i.id === currentPlugin.id)?.profile_id,
+    )?.providers ||
+    [];
+  const engineName = providers.some((p) => p.endsWith("ExecutionProvider"))
+    ? "ONNX Runtime"
+    : currentModel
+      ? "Python 插件"
+      : "待选择模型";
+  const deviceName = providers.includes("CUDAExecutionProvider")
+    ? "CUDA"
+    : providers.includes("CPUExecutionProvider")
+      ? "CPU"
+      : currentModel
+        ? "插件设备"
+        : "未选择模型";
   useEffect(() => {
-    if (readyModels.length && !readyModels.some((m) => m.id === selectedModel))
-      setSelectedModel(readyModels[0].id);
-  }, [models.map((m) => m.id + ":" + m.state).join("|")]);
+    if (!readyModels.some((m) => m.id === selectedModel))
+      setSelectedModel(readyModels[0]?.id || "");
+  }, [readyModels.map((m) => m.id).join("|"), selectedModel]);
   useEffect(() => {
     setParams({
       ...defaults(spec),
@@ -402,10 +441,7 @@ export default function App() {
     if (files.length) setPaths(files);
   }
   function openModel() {
-    const plugin =
-      plugins.find((p) =>
-        installations.some((i) => i.id === p.id && i.state === "ready"),
-      ) || plugins[0];
+    const plugin = plugins.find((p) => readyForPlugin(p.id)) || plugins[0];
     if (plugin) {
       setModelPlugin(plugin.id);
       setModelType(plugin.manifest.models[0].id);
@@ -669,6 +705,7 @@ export default function App() {
               <span>运行节点</span>
               <select
                 aria-label="运行节点"
+                disabled={!!busy}
                 value={nodeId}
                 onChange={(e) => setNodeId(e.target.value)}
               >
@@ -685,7 +722,7 @@ export default function App() {
               </span>
               <span className="cpu-provider">
                 <Cpu size={14} />
-                CPU
+                {deviceName}
               </span>
             </div>
             <button onClick={() => setPage("nodes")}>
@@ -747,10 +784,10 @@ export default function App() {
                     <span>运行后端</span>
                     <Cpu size={17} />
                   </div>
-                  <strong className="backend-name">ONNX Runtime</strong>
+                  <strong className="backend-name">{engineName}</strong>
                   <p>
                     <i className="status-dot" />
-                    CPU Execution Provider
+                    {providers.join(" · ") || "运行后端由模型插件提供"}
                   </p>
                 </div>
               </div>
@@ -1228,7 +1265,13 @@ export default function App() {
                           <div className={"model-type-icon " + model.task}>
                             <Boxes size={23} />
                           </div>
-                          <Badge state={model.state} />
+                          <Badge
+                            state={
+                              model.state === "ready" && !canRunModel(model)
+                                ? "unavailable"
+                                : model.state
+                            }
+                          />
                         </div>
                         <h3>{model.name}</h3>
                         <p>
@@ -1261,7 +1304,7 @@ export default function App() {
                         <div className="card-actions">
                           <button
                             className="button primary"
-                            disabled={model.state !== "ready"}
+                            disabled={!canRunModel(model)}
                             onClick={() => {
                               setSelectedModel(model.id);
                               setPage("workbench");
@@ -1319,6 +1362,11 @@ export default function App() {
                   const installation = installations.find(
                     (i) => i.id === plugin.id,
                   );
+                  const environmentState =
+                    installation?.state === "ready" &&
+                    installation.plugin_digest !== plugin.digest
+                      ? "outdated"
+                      : installation?.state;
                   return (
                     <section className="panel plugin-card" key={plugin.id}>
                       <div className="plugin-card-heading">
@@ -1330,7 +1378,9 @@ export default function App() {
                           <p>v{plugin.manifest.version} · Python 插件</p>
                         </div>
                         {installation ? (
-                          <Badge state={installation.state} />
+                          <Badge
+                            state={environmentState || installation.state}
+                          />
                         ) : (
                           <span className="badge neutral">未安装</span>
                         )}
@@ -1456,6 +1506,7 @@ export default function App() {
                 </div>
                 <button
                   className="button wide"
+                  disabled={!!busy}
                   onClick={() => setNodeId("local")}
                 >
                   {nodeId === "local" ? (
@@ -1525,7 +1576,7 @@ export default function App() {
                       )}
                       <button
                         className="button primary"
-                        disabled={n.status !== "online"}
+                        disabled={!!busy || n.status !== "online"}
                         onClick={() => {
                           setNodeId(n.id);
                           setPage("workbench");
@@ -1536,6 +1587,7 @@ export default function App() {
                       <button
                         className="icon-button"
                         title="移除连接（不删除远端数据）"
+                        disabled={!!busy}
                         onClick={() =>
                           perform("移除连接", async () => {
                             await api("remove_node", { id: n.id });
@@ -1783,9 +1835,7 @@ export default function App() {
                     </select>
                   </label>
                 </div>
-                {!installations.some(
-                  (i) => i.id === modelPlugin && i.state === "ready",
-                ) && (
+                {!readyForPlugin(modelPlugin) && (
                   <div className="alert warning">
                     <AlertCircle size={16} />
                     <span>请先在插件管理中准备此插件的运行环境。</span>
@@ -1826,7 +1876,12 @@ export default function App() {
                   </label>
                 )}
                 <label className="field">
-                  <span>ONNX 权重文件</span>
+                  <span>
+                    {(formSpec?.weight_formats || ["onnx"])
+                      .join(" / ")
+                      .toUpperCase()}{" "}
+                    权重文件
+                  </span>
                   <div className="path-input">
                     <input
                       required
@@ -1844,7 +1899,9 @@ export default function App() {
                         type="button"
                         aria-label="选择权重文件"
                         onClick={() =>
-                          pickFiles({ extensions: ["onnx"] })
+                          pickFiles({
+                            extensions: formSpec?.weight_formats || ["onnx"],
+                          })
                             .then((p) => p[0] && setWeight(p[0]))
                             .catch(handleError)
                         }
@@ -1898,13 +1955,7 @@ export default function App() {
                   <button
                     className="button primary"
                     type="submit"
-                    disabled={
-                      !!busy ||
-                      !weight ||
-                      !installations.some(
-                        (i) => i.id === modelPlugin && i.state === "ready",
-                      )
-                    }
+                    disabled={!!busy || !weight || !readyForPlugin(modelPlugin)}
                   >
                     {busy ? (
                       <Loader2 className="spin" size={16} />

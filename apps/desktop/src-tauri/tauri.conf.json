@@ -13,6 +13,7 @@
     "windows": [
       {
         "label": "main",
+        "create": false,
         "title": "ModelDock · 模型坞",
         "width": 1440,
         "height": 960,

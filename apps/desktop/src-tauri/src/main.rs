@@ -199,6 +199,21 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .manage(Runtime::default())
         .invoke_handler(tauri::generate_handler![api, write_file])
+        .setup(|app| {
+            let config = &app.config().app.windows[0];
+            let builder = tauri::WebviewWindowBuilder::from_config(app, config)?;
+            #[cfg(windows)]
+            let builder = if std::env::var("MODELDOCK_WEBVIEW_DEBUG_PORT").as_deref() == Ok("9222")
+            {
+                builder
+                    .devtools(true)
+                    .additional_browser_args("--remote-debugging-port=9222 --disable-gpu")
+            } else {
+                builder.devtools(false)
+            };
+            builder.build()?;
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("ModelDock application failed");
 }

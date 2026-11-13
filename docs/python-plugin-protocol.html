@@ -688,23 +688,24 @@
     </div>
     <nav aria-label="文档目录">
       <a href="#scope"><span>01</span>适用范围与责任边界</a>
-      <a href="#package-layout"><span>02</span>插件目录与交付包</a>
-      <a href="#manifest"><span>03</span>插件清单与字段</a>
-      <a href="#model-catalog"><span>04</span>支持模型、实例与参数描述</a>
-      <a href="#runtime-profiles"><span>05</span>运行方案与 uv 依赖约定</a>
-      <a href="#python-api"><span>06</span>Python 接口与调用生命周期</a>
-      <a href="#context-input"><span>07</span>运行上下文与输入对象</a>
-      <a href="#prediction"><span>08</span>统一结果与逐样本记录</a>
-      <a href="#classification"><span>09</span>图像分类结果 classification/1</a>
-      <a href="#detection"><span>10</span>目标检测结果 detection/1</a>
-      <a href="#visualization-artifacts"><span>11</span>可视化与产物引用</a>
-      <a href="#timing"><span>12</span>性能扩展与计时约定</a>
-      <a href="#errors-cancellation"><span>13</span>错误、日志与取消</a>
-      <a href="#versioning-validation"><span>14</span>版本兼容与接入检查清单</a>
+      <a href="#implementation-0-1-0"><span>02</span>0.1.0 当前实现范围</a>
+      <a href="#package-layout"><span>03</span>插件目录与交付包</a>
+      <a href="#manifest"><span>04</span>插件清单与字段</a>
+      <a href="#model-catalog"><span>05</span>支持模型、实例与参数描述</a>
+      <a href="#runtime-profiles"><span>06</span>运行方案与 uv 依赖约定</a>
+      <a href="#python-api"><span>07</span>Python 接口与调用生命周期</a>
+      <a href="#context-input"><span>08</span>运行上下文与输入对象</a>
+      <a href="#prediction"><span>09</span>统一结果与逐样本记录</a>
+      <a href="#classification"><span>10</span>图像分类结果 classification/1</a>
+      <a href="#detection"><span>11</span>目标检测结果 detection/1</a>
+      <a href="#visualization-artifacts"><span>12</span>可视化与产物引用</a>
+      <a href="#timing"><span>13</span>性能扩展与计时约定</a>
+      <a href="#errors-cancellation"><span>14</span>错误、日志与取消</a>
+      <a href="#versioning-validation"><span>15</span>版本兼容与接入检查清单</a>
     </nav>
     <div class="foot">
       <div class="theme-control" hidden><label for="theme-select">文档配色</label><select id="theme-select"><optgroup label="经典配色"><option value="classic">经典蓝</option><option value="slate">石墨灰</option><option value="forest">森林绿</option></optgroup><optgroup label="亮色配色"><option value="sky">蓝色 · 亮色</option><option value="mint">绿色 · 亮色</option><option value="yellow">黄色 · 亮色</option><option value="pink">粉色 · 亮色</option><option value="apricot" selected>橙色 · 默认</option><option value="lavender">紫色 · 亮色</option></optgroup><optgroup label="深色配色"><option value="dark">深色</option></optgroup></select></div>
-      更新于 2026-11-13<br>版本 0.1 协议草案<br>单文件 HTML · 支持离线阅读
+      更新于 2026-11-13<br>版本 0.2 · SDK 0.1.0 实现参考<br>单文件 HTML · 支持离线阅读
       <button type="button" id="print-button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7zM17 11h.01"/></svg>打印 / 保存 PDF</button>
     </div>
   </aside>
@@ -712,18 +713,23 @@
     <header class="hero">
       <div class="eyebrow">插件作者参考 / 清单 · Python API · 结果协议</div>
       <h1>ModelDock Python 插件协议</h1>
-      <p class="lead">定义 Python 模型插件怎样被安装、加载和执行，以及如何向 ModelDock 返回可校验、可展示的结果。本机与 SSH 节点使用同一套接口。</p><div class="callout"><strong>本文是独立的协议定义来源，状态为待实现的草案。</strong>清单、接口和示例尚不代表已发布 SDK。系统调度与远程部署见 <a href="technical-plan.html">技术方案</a>，产品范围与验收目标见 <a href="product-plan.html">产品方案</a>。</div>
+      <p class="lead">定义 Python 模型插件怎样被安装、加载和执行，以及如何向 ModelDock 返回可校验、可展示的结果。本机与 SSH 节点使用同一套接口。</p><div class="callout"><strong>本文是插件协议的独立定义来源。</strong>仓库已提供 SDK/Worker 0.1.0 源码与随插件分发的 wheel；尚未发布独立 PyPI 包。当前实现范围见下表，后续扩展仍保留规划标识。系统调度见 <a href="technical-plan.html">技术方案</a>，产品验收见 <a href="product-plan.html">产品方案</a>。</div>
     </header>
     <section class="section" id="scope">
       <div class="section-head"><span class="section-num">01</span><h2>适用范围与责任边界</h2></div>
-<p>协议面向使用 Python 接入图像分类与目标检测模型的插件作者。文中的“必须”表示拟定的接入要求，“可选”表示不影响基础接入的扩展能力；接口在实现前仍可通过评审调整。</p>
+<p>协议面向使用 Python 接入图像分类与目标检测模型的插件作者。文中的“必须”表示拟定的接入要求，“可选”表示不影响基础接入的扩展能力；未稳定的扩展接口可通过版本化评审调整。</p>
 <div class="table-wrap"><table><thead><tr><th scope="col">主体</th><th scope="col">负责内容</th></tr></thead><tbody><tr><td>插件</td><td>声明支持模型和依赖，实现模型加载、推理及前后处理，返回统一预测结果。</td></tr><tr><td>SDK / Worker</td><td>校验调用与结果、解析节点文件、提供上下文、计时、取消检查和产物写入。</td></tr><tr><td>应用与节点控制器</td><td>管理 uv 环境、SSH 与文件传输、任务队列、事件、报告与可视化。</td></tr></tbody></table></div>
 <p>插件不直接连接 SSH，不操作桌面控件，不自行安装依赖，也不向应用写入自定义控制消息。Python 虚拟环境用于依赖隔离；插件以节点用户权限执行，首版使用可信插件。</p>
 <p>一个节点上的一个插件对应一个启用环境。插件可以支持多个模型；同一支持模型可以导入多套权重，形成不同模型实例。运行任务选择某个节点上的实例部署记录。</p>
     </section>
 
+    <section class="section" id="implementation-0-1-0">
+      <div class="section-head"><span class="section-num">02</span><h2>0.1.0 当前实现范围</h2></div>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>0.1.0 实现与边界</th></tr></thead><tbody><tr><td>基础接口</td><td>load / predict / close；model 和 instance 为 dict，sample 为 Sample 数据类，context 为 Context。</td></tr><tr><td>模型配置</td><td>model["config_data"] 为已加载 JSON 配置；instance["weight_path"]、["labels"]、["effective_parameters"] 为已解析任务数据。</td></tr><tr><td>分阶段接口</td><td>继承 modeldock_sdk.StagedPlugin，SDK 提供 predict 包装与边界计时；普通插件仅统计预测调用总耗时。</td></tr><tr><td>可视化产物</td><td>context.artifacts.write_bytes 登记有效 PNG/JPEG，最大 32 MB；Prediction 引用产物，应用按需预览。</td></tr><tr><td>运行与版本</td><td>清单主版本 1，分类/检测结果版本 1；SDK/Worker 0.1.0，uv 0.13.6，参考插件运行 Python 3.12.14。</td></tr><tr><td>未开放部分</td><td>GPU 参考环境、纯推理张量基准、视频及标注评估尚未开放；正式 JSON Schema 文件和独立接入 CLI 后续提供。</td></tr></tbody></table></div><p>开发者可从 plugins/efficientnet 和 plugins/yolo 复制完整接入结构。修改 SDK 时，先通过 scripts/prepare_plugins.py 重建 wheel 和摘要锁定，再准备桌面资源；正常测试不解析或升级依赖。</p>
+    </section>
+
     <section class="section" id="package-layout">
-      <div class="section-head"><span class="section-num">02</span><h2>插件目录与交付包</h2></div>
+      <div class="section-head"><span class="section-num">03</span><h2>插件目录与交付包</h2></div>
 <pre><code class="language-text">efficientnet/
   manifest.json                 # 插件清单与支持模型列表
   adapter.py                    # Python 入口
@@ -745,7 +751,7 @@
     </section>
 
     <section class="section" id="manifest">
-      <div class="section-head"><span class="section-num">03</span><h2>插件清单与字段</h2></div>
+      <div class="section-head"><span class="section-num">04</span><h2>插件清单与字段</h2></div>
 <details><summary>完整清单示例：一个插件支持两种模型</summary><pre><code class="language-json">{
   &quot;schema_version&quot;: &quot;1&quot;,
   &quot;id&quot;: &quot;efficientnet&quot;,
@@ -804,7 +810,7 @@
     </section>
 
     <section class="section" id="model-catalog">
-      <div class="section-head"><span class="section-num">04</span><h2>支持模型、实例与参数描述</h2></div>
+      <div class="section-head"><span class="section-num">05</span><h2>支持模型、实例与参数描述</h2></div>
 <div class="table-wrap"><table><thead><tr><th scope="col">models[] 字段</th><th scope="col">要求</th><th scope="col">说明</th></tr></thead><tbody><tr><td>id / name</td><td>必填。</td><td>模型稳定标识与显示名称，例如 efficientnet_b0。</td></tr><tr><td>task</td><td>必填。</td><td>首版为 classification 或 detection。</td></tr><tr><td>result_schema</td><td>必填。</td><td>对应 classification/1 或 detection/1；必须与 task 匹配。</td></tr><tr><td>weight_formats</td><td>非空数组，必填。</td><td>文件格式声明，例如 onnx；实际兼容性仍需加载检查。</td></tr><tr><td>config</td><td>相对路径，必填。</td><td>JSON 模型约定：输入尺寸/布局、颜色、归一化、输出与标签要求。</td></tr><tr><td>parameter_schema</td><td>相对路径，必填。</td><td>允许配置的模型参数与 UI 描述；无参数时提供空 properties。</td></tr><tr><td>capabilities</td><td>object，可选。</td><td>timing_mode 默认 predict_total；pure_inference_benchmark 默认 false。</td></tr><tr><td>extensions</td><td>object，可选。</td><td>命名空间扩展，不改变标准结果含义。</td></tr></tbody></table></div>
 <p>模型实例提供权重、标签和用户参数；平台生成不可变的任务配置快照。参数按“模型默认值 → 实例覆盖 → 本次测试覆盖”合并，并用同一参数描述验证。未声明参数、类型错误和越界值必须报错。</p>
 <p>首版参数描述采用 JSON Schema 的明确子集：object、string、number、integer、boolean、enum、properties、required、default、minimum/maximum、description 和 additionalProperties。平台不执行远程 $ref；不支持的校验关键字必须报错，避免静默忽略约束。</p>
@@ -830,7 +836,7 @@
     </section>
 
     <section class="section" id="runtime-profiles">
-      <div class="section-head"><span class="section-num">05</span><h2>运行方案与 uv 依赖约定</h2></div>
+      <div class="section-head"><span class="section-num">06</span><h2>运行方案与 uv 依赖约定</h2></div>
 <div class="table-wrap"><table><thead><tr><th scope="col">runtime_profiles[] 字段</th><th scope="col">要求</th></tr></thead><tbody><tr><td>id</td><td>必填，插件内唯一，例如 onnx-cpu。</td></tr><tr><td>project_dir</td><td>必填，指向同时包含 pyproject.toml、uv.lock、.python-version 的目录。</td></tr><tr><td>platforms</td><td>必填非空数组，首批为 windows-x86_64、linux-x86_64。</td></tr><tr><td>providers</td><td>必填非空数组，本方案允许的执行后端；首批采用 ONNX Runtime Provider 名称。</td></tr><tr><td>extensions</td><td>可选的命名空间元数据。</td></tr></tbody></table></div>
 <p>Python 版本文件应固定已验证的完整版本；pyproject.toml 的 requires-python 与之兼容。运行依赖、SDK/Worker 和本地 wheel 在锁文件中固定，依赖项目设置为运行依赖集合，不依赖全局 Python 包。</p>
 <p>平台在安装、更新或修复阶段用 uv 创建候选环境并执行锁定同步，健康检查成功后启用。正常测试直接运行已有环境中的解释器，不触发 uv 解析或联网更新。</p>
@@ -839,8 +845,8 @@
     </section>
 
     <section class="section" id="python-api">
-      <div class="section-head"><span class="section-num">06</span><h2>Python 接口与调用生命周期</h2></div>
-<pre><code class="language-python"># 接口草案：类型由未来的 modeldock_sdk 提供，当前尚未发布。
+      <div class="section-head"><span class="section-num">07</span><h2>Python 接口与调用生命周期</h2></div>
+<pre><code class="language-python"># 接口草案：SDK 0.1.0：Context / Sample 已提供，model / instance 使用 dict。
 class Plugin:
     def load(self, context, model, instance):
         # model: 支持模型声明与配置。
@@ -861,15 +867,15 @@ class Plugin:
     </section>
 
     <section class="section" id="context-input">
-      <div class="section-head"><span class="section-num">07</span><h2>运行上下文与输入对象</h2></div>
-<div class="table-wrap"><table><thead><tr><th scope="col">对象 / 字段</th><th scope="col">含义与使用约定</th></tr></thead><tbody><tr><td>context.task_id / node_id</td><td>当前任务与节点标识；本机和远端都存在。</td></tr><tr><td>context.phase</td><td>warmup 或 measurement；预热阶段不生成正式样本结果。</td></tr><tr><td>context.log(level, message, fields)</td><td>结构化日志；不写凭据，大对象通过产物保存。</td></tr><tr><td>context.raise_if_cancelled()</td><td>检查取消并抛出 SDK 专用取消异常；插件不得吞掉该异常。</td></tr><tr><td>context.read_image(sample)</td><td>读取图片并按 EXIF 方向规范化，返回规范化后的尺寸及 RGB 图像。</td></tr><tr><td>context.artifacts</td><td>任务产物写入器；生成 artifact_id，限制在任务产物目录中。</td></tr><tr><td>sample.sample_id / path / media_type / sha256</td><td>稳定样本标识、节点本地已解析路径、媒体类型和内容摘要。</td></tr><tr><td>model.id / task / config</td><td>当前支持模型及其不可变配置。</td></tr><tr><td>instance.weight_path / labels / effective_parameters</td><td>节点本地权重、可选标签序列、已合并与校验的任务参数。</td></tr></tbody></table></div>
+      <div class="section-head"><span class="section-num">08</span><h2>运行上下文与输入对象</h2></div>
+<div class="table-wrap"><table><thead><tr><th scope="col">对象 / 字段</th><th scope="col">含义与使用约定</th></tr></thead><tbody><tr><td>context.task_id / node_id</td><td>当前任务与节点标识；本机和远端都存在。</td></tr><tr><td>context.phase</td><td>warmup 或 measurement；预热阶段不生成正式样本结果。</td></tr><tr><td>context.log(level, message, fields)</td><td>结构化日志；不写凭据，大对象通过产物保存。</td></tr><tr><td>context.raise_if_cancelled()</td><td>检查取消并抛出 SDK 专用取消异常；插件不得吞掉该异常。</td></tr><tr><td>context.read_image(sample)</td><td>读取图片并按 EXIF 方向规范化，返回规范化后的尺寸及 RGB 图像。</td></tr><tr><td>context.artifacts</td><td>任务产物写入器；生成 artifact_id，限制在任务产物目录中。</td></tr><tr><td>sample.sample_id / path / media_type / sha256</td><td>稳定样本标识、节点本地已解析路径、媒体类型和内容摘要。</td></tr><tr><td>model["id"] / ["task"] / ["config_data"]</td><td>当前支持模型及其不可变配置。</td></tr><tr><td>instance["weight_path"] / ["labels"] / ["effective_parameters"]</td><td>节点本地权重、可选标签序列、已合并与校验的任务参数。</td></tr></tbody></table></div>
 <p>Python 进程内 path 可以是 pathlib.Path；跨进程传输由 SDK 处理。输入不包含 SSH 凭据或客户端临时路径。插件只读取本次任务提供的节点文件，不自行推断其他节点的路径。</p>
 <p>规范化图片是应用预览和框坐标的共同基准：SDK 根据 EXIF 方向旋转/翻转后，以左上角为原点。简单插件可以使用自己的解码库，但必须遵守相同方向约定；无法提供可靠读取计时时相应分段为 null。</p>
 <p>标签文件采用 UTF-8，每行一个类别名，行号从 0 对应 class_id，末尾换行不增加类别；中间空行报错。未提供标签时采用十进制 class_id 字符串作为显示名，平台不猜测训练类别。</p>
     </section>
 
     <section class="section" id="prediction">
-      <div class="section-head"><span class="section-num">08</span><h2>统一结果与逐样本记录</h2></div>
+      <div class="section-head"><span class="section-num">09</span><h2>统一结果与逐样本记录</h2></div>
 <div class="table-wrap"><table><thead><tr><th scope="col">Prediction 公共字段</th><th scope="col">要求</th></tr></thead><tbody><tr><td>result_schema / task</td><td>必填，必须与支持模型声明一致。</td></tr><tr><td>sample_id</td><td>必填，与当前输入样本完全一致。</td></tr><tr><td>image_size</td><td>必填，{width, height}，均为正整数，使用方向规范化后的原图尺寸。</td></tr><tr><td>top_k 或 detections</td><td>按任务类型提供且只提供对应核心结果。</td></tr><tr><td>artifacts</td><td>可选，默认 []，仅引用上下文写入器已登记的产物。</td></tr><tr><td>extensions</td><td>可选，默认 {}，命名空间扩展，平台可忽略。</td></tr></tbody></table></div>
 <p>结果必须能编码为 UTF-8 JSON，数值必须有限，不允许 NaN、Infinity、NumPy 标量/数组或 Torch Tensor 直接进入结果。数组与标量在插件中转换为原生 Python 类型。</p>
 <p>Worker 校验后生成逐样本持久化记录，将任务标识、运行状态和 SDK 计时附在预测外层。插件只返回 Prediction，不自行写 results.jsonl，不累计平台成功/失败计数。</p>
@@ -914,7 +920,7 @@ class Plugin:
     </section>
 
     <section class="section" id="classification">
-      <div class="section-head"><span class="section-num">09</span><h2>图像分类结果 classification/1</h2></div>
+      <div class="section-head"><span class="section-num">10</span><h2>图像分类结果 classification/1</h2></div>
 <pre><code class="language-json">{
   &quot;result_schema&quot;: &quot;classification/1&quot;,
   &quot;sample_id&quot;: &quot;img-0001&quot;,
@@ -943,7 +949,7 @@ class Plugin:
     </section>
 
     <section class="section" id="detection">
-      <div class="section-head"><span class="section-num">10</span><h2>目标检测结果 detection/1</h2></div>
+      <div class="section-head"><span class="section-num">11</span><h2>目标检测结果 detection/1</h2></div>
 <pre><code class="language-json">{
   &quot;result_schema&quot;: &quot;detection/1&quot;,
   &quot;sample_id&quot;: &quot;img-0002&quot;,
@@ -984,7 +990,7 @@ class Plugin:
     </section>
 
     <section class="section" id="visualization-artifacts">
-      <div class="section-head"><span class="section-num">11</span><h2>可视化与产物引用</h2></div>
+      <div class="section-head"><span class="section-num">12</span><h2>可视化与产物引用</h2></div>
 <div class="table-wrap"><table><thead><tr><th scope="col">标准数据</th><th scope="col">应用侧可视化</th><th scope="col">插件需要提供</th></tr></thead><tbody><tr><td>分类结果</td><td>Top-K 概率条形图、类别列表、批量摘要。</td><td>类别、标签、概率及原图尺寸。</td></tr><tr><td>检测结果</td><td>原图叠框、按类别着色、框与列表联动、筛选与同步缩放。</td><td>规范原图坐标框、类别和置信度。</td></tr><tr><td>逐样本计时</td><td>耗时趋势、分布图、分阶段堆叠图。</td><td>使用 SDK 的计时能力声明与扩展点。</td></tr><tr><td>可选图像产物</td><td>附件预览，例如解释性热图。</td><td>由写入器登记的 PNG/JPEG 等图像产物。</td></tr></tbody></table></div>
 <p>原图与缩略图由平台按样本引用获取；插件无需烘焙检测框到图片中。标准坐标和类别数据用于交互，标注图片仅作为可选导出产物。</p>
 <pre><code class="language-json">{
@@ -999,7 +1005,7 @@ class Plugin:
     </section>
 
     <section class="section" id="timing">
-      <div class="section-head"><span class="section-num">12</span><h2>性能扩展与计时约定</h2></div>
+      <div class="section-head"><span class="section-num">13</span><h2>性能扩展与计时约定</h2></div>
 <p>capabilities.timing_mode 为 predict_total 或 staged。简单接入默认 predict_total：SDK 在调用外围记录 sample_total_ms，不能确认的细分阶段为 null。</p>
 <p>staged 模式由 SDK 基类提供 predict 包装，插件实现以下扩展点；不通过插件自报任意数值生成正式性能指标。</p>
 <pre><code class="language-python">class StagedPlugin:
@@ -1020,19 +1026,19 @@ class Plugin:
     </section>
 
     <section class="section" id="errors-cancellation">
-      <div class="section-head"><span class="section-num">13</span><h2>错误、日志与取消</h2></div>
+      <div class="section-head"><span class="section-num">14</span><h2>错误、日志与取消</h2></div>
 <div class="table-wrap"><table><thead><tr><th scope="col">错误代码</th><th scope="col">默认范围</th><th scope="col">处理</th></tr></thead><tbody><tr><td>UNSUPPORTED_MODEL / INVALID_PARAMETERS</td><td>加载或调用前。</td><td>拒绝不支持的结构、配置或参数；要求修正后新建任务。</td></tr><tr><td>MODEL_LOAD_FAILED / DEVICE_UNAVAILABLE</td><td>任务级。</td><td>终止本次任务并记录加载或设备原因。</td></tr><tr><td>INPUT_DECODE_FAILED</td><td>样本级。</td><td>记录损坏/不支持图片，批量继续处理后续样本。</td></tr><tr><td>INVALID_PREDICTION</td><td>样本级。</td><td>记录字段或数值校验错误，不将该样本计为成功。</td></tr><tr><td>OUT_OF_MEMORY</td><td>默认任务级。</td><td>避免在设备状态不明时继续执行；由用户调整后新建任务。</td></tr><tr><td>PLUGIN_EXECUTION_FAILED</td><td>默认任务级。</td><td>未分类异常不默认视为可恢复；Worker 保存受控堆栈日志。</td></tr><tr><td>CANCELLED</td><td>任务控制。</td><td>由专用取消异常触发，保留已有结果，等待执行端确认终态。</td></tr><tr><td>PLUGIN_CRASH</td><td>任务级。</td><td>Worker 异常退出由监督进程登记，不依赖插件自行上报。</td></tr></tbody></table></div>
-<p>SDK 拟提供带 code、phase、scope、message、retryable 的 PluginError。可恢复的单项错误必须明确标为 sample 范围；其他异常由 Worker 按任务失败处理。retryable 只提示恢复可能性，不会使平台在网络超时后重复提交任务。</p>
+<p>SDK 提供带 code、phase、scope、message、retryable 的 PluginError。可恢复的单项错误必须明确标为 sample 范围；其他异常由 Worker 按任务失败处理。retryable 只提示恢复可能性，不会使平台在网络超时后重复提交任务。</p>
 <p>错误记录不包含凭据或大张量。Python 插件的 stdout/stderr 均作为日志捕获；Worker 使用独立控制通道，节点控制器的 SSH stdout 专用于结构化事件。插件不直接实现 JSON Lines 通信。</p>
 <p>插件在解码、前处理、推理前后等适当边界检查取消，耗时循环周期性检查。不可中断的设备调用可能延迟响应；平台超时后终止任务进程组。close 应尽力释放资源，但强制终止时不保证执行。</p>
     </section>
 
     <section class="section" id="versioning-validation">
-      <div class="section-head"><span class="section-num">14</span><h2>版本兼容与接入检查清单</h2></div>
+      <div class="section-head"><span class="section-num">15</span><h2>版本兼容与接入检查清单</h2></div>
 <div class="table-wrap"><table><thead><tr><th scope="col">版本层次</th><th scope="col">兼容规则</th></tr></thead><tbody><tr><td>清单 schema_version</td><td>决定清单字段与含义，不支持的主版本拒绝导入。</td></tr><tr><td>插件 version</td><td>标识代码与模型支持变化，配合包摘要识别具体构件。</td></tr><tr><td>SDK 版本范围</td><td>PEP 440 检查；0.x 阶段在显式范围内验证，不推断所有 0.x 版本兼容。</td></tr><tr><td>result_schema</td><td>分类/检测各自版本化，不支持的结果模式在加载前拒绝。</td></tr><tr><td>进程消息 protocol_version</td><td>由 Worker 与控制器维护，插件作者无需手写；跨节点保持可协商版本。</td></tr></tbody></table></div>
 <p>核心字段重命名、坐标/分数含义改变、必填参数增加或接口签名不兼容都需要对应协议主版本升级。可忽略元数据使用 extensions 命名空间。插件版本不能替代协议版本。</p>
 <ol><li>清单完整，支持模型与运行方案标识唯一，所有路径合法且存在。</li><li>在声明的 Windows/Linux 节点用锁文件完成环境准备与健康检查。</li><li>每个支持模型至少有成功样本、参数错误、权重不匹配和资源释放检查。</li><li>分类验证概率与标签；检测验证空结果、原图坐标、NMS 与稳定排序。</li><li>结果可编码为严格 JSON，无 Tensor/NumPy 对象和非有限数值。</li><li>检查预热排除、计时能力与 GPU 同步，未实现分段时明确返回 null。</li><li>损坏输入、可恢复样本异常、任务级异常和取消均按约定处理。</li><li>同一插件在本机与 SSH 节点使用相同 Python API，不包含节点地址或凭据。</li><li>权重与样本来源、参考结果和数值容差有记录；可视化无须理解原始张量。</li></ol>
-<p>清单 Schema 文件、SDK 包和接入验证 CLI 将在实现阶段提供。本文中的 JSON 与 Python 代码是协议示例；文档校验仅检查示例及页面，不代表模型运行已通过验收。</p>
+<p>已提供 Python 清单校验器、SDK wheel 与 Worker；独立 JSON Schema 文件和接入验证 CLI 后续提供。本文代码是接口示例，完整参考实现见仓库；文档验证与模型功能测试分别记录。</p>
 <p>文档样式采用用户指定的 <a href="https://github.com/whoarei/skills/tree/f8d312ed5e5f091e80562cf463758787e176d208/rtd-html-docs">rtd-html-docs skill</a>，保持单文件离线阅读、配色切换与打印能力。</p>
     </section>
     <footer class="footer">ModelDock · Python 插件协议草案 · 2026-11-13<br>单文件 HTML · 支持离线阅读与打印 / 保存 PDF</footer>

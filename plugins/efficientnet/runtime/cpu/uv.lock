@@ -77,7 +77,7 @@ dependencies = [
     { name = "pillow" },
 ]
 wheels = [
-    { filename = "modeldock_sdk-0.1.0-py3-none-any.whl", hash = "sha256:dc89b2c3af5487017c3ca834c5fb30f0753c481d85b9a7f476e0fff37f5bd4e0" },
+    { filename = "modeldock_sdk-0.1.0-py3-none-any.whl", hash = "sha256:5dc868e805c470870124b63656ad8a8d1c294007ee47eb24412065701d94f5a8" },
 ]
 
 [package.metadata]

@@ -4,6 +4,60 @@ import path from "node:path";
 const root = path.resolve(import.meta.dirname, "../../..");
 const fixtures = path.join(root, "test-results/browser-fixtures");
 
+test("switching away from a slow node does not block local state or show stale errors", async ({
+  page,
+  request,
+}) => {
+  const added = await (
+    await request.post("/api", {
+      data: {
+        command: "add_node",
+        args: {
+          name: "Slow node test",
+          host: "127.0.0.1",
+          user: "tester",
+          port: 65530,
+        },
+      },
+    })
+  ).json();
+  expect(added.ok).toBeTruthy();
+  const nodeId = added.data.id;
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => (release = resolve));
+  let pending = false;
+  await page.route("**/api", async (route) => {
+    const body = route.request().postDataJSON();
+    if (body.command === "state" && body.args.node_id === nodeId) {
+      pending = true;
+      await gate;
+      await route.fulfill({
+        json: { ok: false, error: { message: "旧节点请求已过期" } },
+      });
+    } else await route.continue();
+  });
+  try {
+    await page.goto("/");
+    await expect(page.locator(".connecting")).toHaveCount(0);
+    await page
+      .getByRole("combobox", { name: "运行节点", exact: true })
+      .selectOption(nodeId);
+    await expect.poll(() => pending).toBeTruthy();
+    await page
+      .getByRole("combobox", { name: "运行节点", exact: true })
+      .selectOption("local");
+    await expect(page.locator(".connecting")).toHaveCount(0, { timeout: 2000 });
+    release();
+    await page.waitForTimeout(200);
+    await expect(page.getByRole("alert")).toHaveCount(0);
+  } finally {
+    release();
+    await request.post("/api", {
+      data: { command: "remove_node", args: { id: nodeId } },
+    });
+  }
+});
+
 test("real ONNX workflow: environments, import, predictions, charts, filtering and exports", async ({
   page,
 }, testInfo) => {
@@ -25,6 +79,7 @@ test("real ONNX workflow: environments, import, predictions, charts, filtering a
     page.getByRole("heading", { name: "模型测试工作台" }),
   ).toBeVisible();
   await expect(page.locator(".connecting")).toHaveCount(0);
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
     path: testInfo.outputPath("workbench-initial.png"),
     fullPage: true,
@@ -104,6 +159,7 @@ test("real ONNX workflow: environments, import, predictions, charts, filtering a
     "complete",
     true,
   );
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
     path: testInfo.outputPath("classification-results.png"),
     fullPage: true,
@@ -114,6 +170,7 @@ test("real ONNX workflow: environments, import, predictions, charts, filtering a
   await page.getByRole("button", { name: "性能分析", exact: true }).click();
   await expect(page.getByText("耗时分布", { exact: true })).toBeVisible();
   await expect(page.locator(".two-charts .chart")).toHaveCount(2);
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
     path: testInfo.outputPath("performance.png"),
     fullPage: true,
@@ -137,6 +194,7 @@ test("real ONNX workflow: environments, import, predictions, charts, filtering a
   await page.getByLabel("类别筛选").selectOption("1");
   await expect(page.locator('svg[aria-label="检测框"] > g')).toHaveCount(1);
   await page.getByLabel("类别筛选").selectOption("all");
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
     path: testInfo.outputPath("detection-results.png"),
     fullPage: true,
@@ -148,6 +206,7 @@ test("real ONNX workflow: environments, import, predictions, charts, filtering a
   await expect
     .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
     .toBeLessThanOrEqual(390);
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
     path: testInfo.outputPath("mobile.png"),
     fullPage: true,

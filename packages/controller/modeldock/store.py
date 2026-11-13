@@ -14,6 +14,16 @@ TERMINAL = {"SUCCEEDED", "PARTIAL_FAILED", "FAILED", "CANCELLED"}
 ACTIVE = {"PREPARING", "RUNNING", "CANCEL_REQUESTED"}
 
 
+def run_process(*args, **kwargs):
+    kwargs.setdefault("creationflags", getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    return subprocess.run(*args, **kwargs)
+
+
+def command_output(*args, **kwargs):
+    kwargs.setdefault("creationflags", getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    return subprocess.check_output(*args, **kwargs)
+
+
 def root():
     value = os.environ.get("MODELDOCK_DATA_DIR")
     if value:

@@ -61,7 +61,7 @@ def create_model(args):
         encoding="utf-8",
     )
     try:
-        result = subprocess.run(
+        result = store.run_process(
             [
                 installation["python"],
                 "-m",
@@ -133,10 +133,19 @@ def start(args):
         or any(c not in "0123456789abcdef" for c in ident)
     ):
         raise ValueError("任务标识无效")
+    supported = next(
+        (m for m in plugin["manifest"]["models"] if m["id"] == instance["model_id"]), None
+    )
+    if supported is None:
+        raise ValueError("当前插件不再支持此模型，请重新导入兼容的模型实例")
+    model_configuration = json.loads(
+        (Path(plugin["path"]) / supported["config"]).read_text(encoding="utf-8-sig")
+    )
     config = dict(
         instance=instance,
         plugin=plugin,
         installation=installation,
+        model_configuration=model_configuration,
         paths=files,
         mode=mode,
         iterations=iterations,
@@ -275,7 +284,9 @@ def supervise(ident):
                 stdout=output,
                 stderr=output,
                 start_new_session=sys.platform != "win32",
-                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == "win32" else 0,
+                creationflags=(subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW)
+                if sys.platform == "win32"
+                else 0,
             )
             from .resources import process_birth
 
@@ -324,7 +335,7 @@ def terminate(process):
     if process.poll() is not None:
         return
     if sys.platform == "win32":
-        subprocess.run(
+        store.run_process(
             ["taskkill", "/PID", str(process.pid), "/T", "/F"],
             capture_output=True,
             timeout=15,
