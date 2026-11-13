@@ -5,6 +5,7 @@ on:
     paths: ['release-signatures/v*.json']
 permissions:
   contents: write
+  actions: read
 concurrency:
   group: publish-signed-release
   cancel-in-progress: false
@@ -35,17 +36,41 @@ jobs:
           RELEASE_TAG: ${{ steps.record.outputs.tag }}
         run: |
           test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = true
-          gh release download "$RELEASE_TAG" --dir release-assets --pattern '*-setup.exe'
           python - <<'PY'
-          import hashlib,json,pathlib,os
+          import hashlib,json,pathlib,os,subprocess,re
           version=os.environ['RELEASE_TAG'][1:]
           record=json.loads(pathlib.Path(f'release-signatures/v{version}.json').read_text(encoding='utf-8'))
+          repo=os.environ['GITHUB_REPOSITORY']
+          if 'artifact_run_id' in record:
+              run_id=record['artifact_run_id']
+              assert isinstance(run_id,int) and run_id>0
+              assert re.fullmatch('[a-f0-9]{40}',record['source_sha'])
+              run=json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/actions/runs/{run_id}']))
+              assert run['conclusion']=='success' and run['head_sha']==record['source_sha']
+              assert run['path']=='.github/workflows/verify.yml'
+              subprocess.run(['gh','run','download',str(run_id),'--name','ModelDock-windows-x64','--dir','release-assets'],check=True)
+          else:
+              subprocess.run(['gh','release','download',os.environ['RELEASE_TAG'],'--dir','release-assets','--pattern','*-setup.exe'],check=True)
           installer=pathlib.Path(f'release-assets/ModelDock_{version}_x64-setup.exe')
           assert hashlib.sha256(installer.read_bytes()).hexdigest() == record['installer_sha256'], 'Installer changed since local signing'
           installer.with_suffix('.exe.sig').write_text(record['signature'],encoding='utf-8')
+          if 'artifact_run_id' in record:
+              # Only an unpublished candidate tag may move, and only with an
+              # explicit expected reference and a passing source-build run.
+              tag=os.environ['RELEASE_TAG']
+              ref=json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/git/ref/tags/{tag}']))['object']
+              target=ref['sha']
+              if ref['type']=='tag':
+                  target=json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/git/tags/{target}']))['object']['sha']
+              if target != record['source_sha']:
+                  assert ref['sha']==record['expected_candidate_tag_sha'], 'Candidate tag changed; stop rather than overwrite it'
+                  def write_api(endpoint,method,payload):
+                      return json.loads(subprocess.check_output(['gh','api','--method',method,endpoint,'--input','-'],input=json.dumps(payload).encode()))
+                  obj=write_api(f'repos/{repo}/git/tags','POST',dict(tag=tag,message=f'ModelDock {version}',object=record['source_sha'],type='commit'))
+                  write_api(f'repos/{repo}/git/refs/tags/{tag}','PATCH',dict(sha=obj['sha'],force=True))
           PY
           python scripts/release_assets.py release-assets
-          gh release upload "$RELEASE_TAG" release-assets/*.sig release-assets/latest.json release-assets/SHA256SUMS --clobber
+          gh release upload "$RELEASE_TAG" release-assets/* --clobber
   upgrade:
     needs: stage
     uses: ./.github/workflows/updater-smoke.yml
