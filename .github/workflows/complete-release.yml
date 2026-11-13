@@ -59,14 +59,18 @@ jobs:
               # explicit expected reference and a passing source-build run.
               tag=os.environ['RELEASE_TAG']
               ref=json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/git/ref/tags/{tag}']))['object']
+              release_sha=os.environ['GITHUB_SHA']
+              comparison=json.loads(subprocess.check_output(['gh','api',f"repos/{repo}/compare/{record['source_sha']}...{release_sha}"]))
+              files=comparison.get('files',[])
+              assert len(files)<300 and all(f['filename'].startswith(('.github/workflows/','release-signatures/')) or f['filename']=='README.md' for f in files), 'Application changed after its verified build'
               target=ref['sha']
               if ref['type']=='tag':
                   target=json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/git/tags/{target}']))['object']['sha']
-              if target != record['source_sha']:
+              if target != release_sha:
                   assert ref['sha']==record['expected_candidate_tag_sha'], 'Candidate tag changed; stop rather than overwrite it'
                   def write_api(endpoint,method,payload):
                       return json.loads(subprocess.check_output(['gh','api','--method',method,endpoint,'--input','-'],input=json.dumps(payload).encode()))
-                  obj=write_api(f'repos/{repo}/git/tags','POST',dict(tag=tag,message=f'ModelDock {version}',object=record['source_sha'],type='commit'))
+                  obj=write_api(f'repos/{repo}/git/tags','POST',dict(tag=tag,message=f'ModelDock {version}',object=release_sha,type='commit'))
                   write_api(f'repos/{repo}/git/refs/tags/{tag}','PATCH',dict(sha=obj['sha'],force=True))
           PY
           python scripts/release_assets.py release-assets
