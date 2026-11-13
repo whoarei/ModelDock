@@ -1,0 +1,85 @@
+name: Verify ModelDock 0.1.0
+on:
+  push:
+    branches: [main, 'feat/**']
+    paths-ignore: ['docs/**', 'README.md']
+  pull_request:
+    paths-ignore: ['docs/**', 'README.md']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: verify-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.13.6'
+          python-version: '3.12.14'
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - run: uv sync --locked
+      - run: uv run ruff check packages plugins scripts tests
+      - run: uv run pytest
+      - run: npm ci
+        working-directory: apps/desktop
+      - run: npm run build
+        working-directory: apps/desktop
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/desktop
+      - run: npx playwright test
+        working-directory: apps/desktop
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-test-results
+          path: apps/desktop/test-results
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.13.6'
+          python-version: '3.12.14'
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+      - run: uv sync --locked
+      - run: uv run pytest
+      - run: uv run python scripts/prepare_resources.py --rust-licenses
+      - run: npm ci
+        working-directory: apps/desktop
+      - run: cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml -- --check
+      - run: npm run tauri -- build --bundles nsis --ci
+        working-directory: apps/desktop
+      - run: node scripts/native-smoke.mjs
+        working-directory: apps/desktop
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-native-test-results
+          path: test-results/native-ui
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ModelDock-0.1.0-windows-x64
+          path: apps/desktop/src-tauri/target/release/bundle/nsis/*-setup.exe

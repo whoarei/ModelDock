@@ -1,0 +1,38 @@
+[project]
+name = "modeldock-controller"
+version = "0.1.0"
+description = "ModelDock local and SSH node controller"
+requires-python = ">=3.11,<3.14"
+dependencies = ["modeldock-sdk"]
+
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["packages/controller/modeldock"]
+
+[tool.uv.workspace]
+members = ["packages/python-sdk"]
+
+[tool.uv.sources]
+modeldock-sdk = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=8,<9",
+    "onnx>=1.18,<2",
+    "onnxruntime>=1.20,<2",
+    "asyncssh>=2.20,<3",
+    "ruff>=0.12,<1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]

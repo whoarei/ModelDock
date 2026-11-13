@@ -1,0 +1,1 @@
+{"input_size":[640,640],"output_layout":"channels_first","embedded_nms":false,"box_format":"xywh","score":"class_probability","padding_value":114}

@@ -21,3 +21,10 @@ test-results/
 # Operating system files
 .DS_Store
 Thumbs.db
+
+.cache/
+.pytest_cache/
+.ruff_cache/
+*.tsbuildinfo
+fixtures/generated/
+apps/desktop/src-tauri/resources/runtime/

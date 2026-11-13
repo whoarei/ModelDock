@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "id": "efficientnet",
+  "name": "EfficientNet 分类",
+  "version": "0.1.0",
+  "sdk_version": ">=0.1,<0.2",
+  "entrypoint": "adapter:Plugin",
+  "runtime_profiles": [{"id":"onnx-cpu","project_dir":"runtime/cpu","platforms":["windows-x86_64","linux-x86_64"],"providers":["CPUExecutionProvider"]}],
+  "models": [
+    {"id":"efficientnet_b0","name":"EfficientNet-B0","task":"classification","result_schema":"classification/1","weight_formats":["onnx"],"config":"configs/b0.json","parameter_schema":"schemas/params.json","capabilities":{"timing_mode":"staged","pure_inference_benchmark":false}},
+    {"id":"efficientnet_b1","name":"EfficientNet-B1","task":"classification","result_schema":"classification/1","weight_formats":["onnx"],"config":"configs/b1.json","parameter_schema":"schemas/params.json","capabilities":{"timing_mode":"staged","pure_inference_benchmark":false}}
+  ]
+}
