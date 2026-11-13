@@ -111,6 +111,8 @@ export default function WeightDownload({
     startingRef.current = true;
     setStarting(true);
     setError("");
+    current.current = null;
+    setDownload(null);
     onFile("");
     onBusy("下载权重");
     try {
@@ -141,14 +143,13 @@ export default function WeightDownload({
     if (!download) return;
     onBusy("取消权重下载");
     try {
-      receive(
-        await api<DownloadState>("cancel_download", {
-          node_id: nodeId,
-          id: download.id,
-        }),
-      );
+      const value = await api<DownloadState>("cancel_download", {
+        node_id: nodeId,
+        id: download.id,
+      });
+      if (mounted.current) receive(value);
     } catch {
-      setError("取消请求未送达，请检查节点连接后重试");
+      if (mounted.current) setError("取消请求未送达，请检查节点连接后重试");
     }
   }
   function reset() {
