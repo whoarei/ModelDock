@@ -39,7 +39,10 @@ const environment = {
   WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: "--remote-debugging-port=9222",
 };
 const start = (binary) =>
-  spawn(binary, ["--inspect-webview=9222"], { env: environment, stdio: "ignore" });
+  spawn(binary, ["--inspect-webview=9222"], {
+    env: environment,
+    stdio: "ignore",
+  });
 let app = start(
   path.join(root, "apps/desktop/src-tauri/target/release/modeldock.exe"),
 );
@@ -65,6 +68,7 @@ async function connect(timeout = 90000) {
 }
 try {
   await connect();
+  console.log("Older client connected; preparing user-data marker.");
   const marker = "升级保留数据 " + Date.now();
   const created = await page.evaluate(
     async (marker) =>
@@ -87,6 +91,7 @@ try {
   );
   assert.equal(update.currentVersion, "0.0.0");
   assert.equal(update.version, manifest.version);
+  console.log("Update metadata accepted:", update.version);
   const download = await page.evaluate(async (update) => {
     const progress = [];
     const callback = window.__TAURI_INTERNALS__.transformCallback((raw) => {
@@ -120,6 +125,7 @@ try {
       2,
     ),
   );
+  console.log("Signed installer downloaded and verified.");
   const stopped = new Promise((resolve, reject) => {
     const timer = setTimeout(
       () => reject(new Error("Old client did not exit for installation")),
@@ -139,10 +145,57 @@ try {
     )
     .catch(() => {});
   assert.equal(await stopped, 0);
+  console.log("Old client exited; waiting for the installed application.");
   await browser.close().catch(() => {});
   browser = null;
-  // NSIS should restart the installed app. Reconnect to its inherited debug port.
-  await connect(120000);
+  // NSIS can restart through Explorer, which does not inherit the test driver's
+  // environment. Require evidence of automatic launch before restoring CDP.
+  let restoredDebugConnection = false;
+  try {
+    await connect(30000);
+  } catch {
+    const installedBinary = path.join(
+      root,
+      "test-results/upgrade-install/ModelDock/modeldock.exe",
+    );
+    const candidates = JSON.parse(
+      execFileSync(
+        "powershell.exe",
+        [
+          "-NoProfile",
+          "-Command",
+          "@(Get-Process -Name modeldock -ErrorAction SilentlyContinue | Where-Object { $_.Path -ieq $env:MODELDOCK_UPGRADE_BINARY -and $_.Id -ne [int]$env:MODELDOCK_OLD_PID } | Select-Object -ExpandProperty Id) | ConvertTo-Json -Compress",
+        ],
+        {
+          encoding: "utf8",
+          env: {
+            ...process.env,
+            MODELDOCK_UPGRADE_BINARY: installedBinary,
+            MODELDOCK_OLD_PID: String(app.pid),
+          },
+        },
+      ) || "[]",
+    );
+    const running = (Array.isArray(candidates) ? candidates : [candidates])[0];
+    const installedPayloadPresent = await fs
+      .stat(installedBinary)
+      .then((info) => info.isFile())
+      .catch(() => false);
+    await fs.writeFile(
+      path.join(output, "restart-check.json"),
+      JSON.stringify({
+        automaticRestartObserved: !!running,
+        installedPayloadPresent,
+      }),
+    );
+    assert(running, "Installer did not automatically launch the updated app");
+    execFileSync("taskkill", ["/PID", String(running), "/T", "/F"], {
+      stdio: "ignore",
+    });
+    app = start(installedBinary);
+    await connect();
+    restoredDebugConnection = true;
+  }
   const version = await page.evaluate(() =>
     window.__TAURI_INTERNALS__.invoke("plugin:app|version"),
   );
@@ -170,6 +223,7 @@ try {
         signatureVerified: true,
         installation: true,
         automaticRestart: true,
+        restoredDebugConnection,
         userDataPreserved: true,
       },
       null,
