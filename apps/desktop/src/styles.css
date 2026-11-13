@@ -14,6 +14,9 @@
 .update-entry {
   position: relative;
 }
+.update-modal {
+  color: #293641;
+}
 .update-dot {
   width: 7px;
   height: 7px;

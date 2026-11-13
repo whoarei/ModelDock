@@ -30,7 +30,7 @@ def test_release_manifest_matches_installer_and_signed_version(tmp_path):
         ).decode()
     )
     manifest = prepare(tmp_path, "0.2.0", "更新说明")
-    data = json.loads(manifest.read_text())
+    data = json.loads(manifest.read_text(encoding="utf-8"))
     assert data["version"] == "0.2.0" and data["notes"] == "更新说明"
     assert data["platforms"]["windows-x86_64"]["url"].endswith("/v0.2.0/" + installer.name)
     assert data["platforms"]["windows-x86_64"]["signature"] == signature.read_text()
