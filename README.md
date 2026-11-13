@@ -2,7 +2,111 @@
 
 插件化本地与远程模型测试平台。以 Tauri 构建 Windows 桌面应用，通过 Python 插件接入模型，使用 uv 维护每节点、每插件的运行环境，并支持 SSH Linux 节点。
 
-当前仓库为 **方案阶段**，仅包含产品、技术设计与插件协议，尚无可运行应用。
+当前推进 **0.2.0**。已加入 Tauri 桌面应用、Python SDK/Worker、本机与 SSH 控制器及参考插件；方案文档描述的后续能力不等于本版已开放能力。
+
+## 当前实现范围
+
+- 每节点、每插件独立的 uv 环境；插件 ZIP 导入、安装、修复和卸载。
+- ONNX 分类与约定格式的 YOLO 检测参考插件；权重与类别文件独立导入，加载时验证。
+- 单图、图片目录/批量及预热后的性能测试；任务排队、取消、中断识别和同配置重测。
+- 原图/结果切换、检测框与列表联动、类别/置信度筛选、缩放拖动及 PNG 结果图导出。
+- 逐样本耗时、分布、P50/P95、吞吐量、分阶段计时、进程 RSS 采样及条件对比。
+- 本地历史、逐项错误、JSON/CSV 报告；模型/输入/环境摘要随任务保存。
+- SSH Linux 节点：主机指纹核对、控制器部署、SFTP 上传或远端文件复用、断线后台执行和结果取回。
+
+首版参考插件仅使用 **CPU、batch=1、NCHW float32 输入**。GPU、视频、标注精度评估和纯推理张量基准尚未开放。分类概率和检测置信度均不代表准确率。
+
+参考分类插件采用 RGB、中心裁剪、ImageNet 均值/方差，B0 为 224×224，B1 为 240×240，输出为 logits。YOLO 参考插件只支持 640×640、`[1, 4+C, N]`、xywh、类别概率、无内置 NMS 的检测导出；不支持直接导入任意 YOLO 版本、NHWC、分割或姿态导出。不同预处理约定请创建自己的插件。
+
+## 应用在线更新
+
+0.2.0 起，桌面安装版会在启动后检查新的稳定版，也可以从侧栏“应用更新”手动检查。查看更新说明后点击“下载并安装”，应用校验内容签名和版本后安装并重启。本机任务或插件环境操作尚未完成时会阻止安装；网络与校验失败可重试。
+
+更新保留用户目录中的模型、插件环境与测试记录。浏览器开发预览不提供安装更新；0.1.0 试用包需要手动安装一次 0.2.0，之后可在线更新。首次正式安装包见 [v0.2.0](https://github.com/whoarei/ModelDock/releases/tag/v0.2.0)。
+
+## 本地开发
+
+需要 uv 0.13.6、Node.js 22+。Windows 原生开发还需要 Rust stable、Visual Studio C++ Build Tools 和 WebView2。发行安装包携带 uv 和控制器，首次准备 Python/依赖需要联网，之后就绪的本机环境可离线测试；不包含业务模型权重。
+
+```sh
+uv sync --locked
+npm ci --prefix apps/desktop
+uv run python scripts/prepare_resources.py --rust-licenses
+```
+
+开发原生桌面窗口：
+
+```sh
+cd apps/desktop
+npm run tauri -- dev
+```
+
+也可以用两个终端运行开发预览（HTTP 桥仅监听 127.0.0.1，发行程序通过 Tauri IPC/stdio 调用控制器）：
+
+```sh
+uv run python -m modeldock.cli serve
+```
+
+```sh
+npm run dev --prefix apps/desktop
+```
+
+修改 SDK 后，重新构建随插件分发的 wheel 并刷新它的锁定摘要，再生成资源。uv 工具从官方固定版本下载，并校验仓库中记录的 SHA-256；发行资源包括第三方许可。
+
+```sh
+uv run python scripts/prepare_plugins.py --lock
+uv run python scripts/prepare_resources.py --rust-licenses
+```
+
+## 测试与 Windows 构建
+
+```sh
+uv run ruff check packages plugins scripts tests
+uv run pytest
+npm run build --prefix apps/desktop
+```
+
+界面端到端检查使用真实的本机开发桥、uv 环境和 ONNX Runtime。开发机安装 Playwright Chromium 后，在 `apps/desktop` 执行 `npx playwright test`；也可用 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` 指定已有 Chromium。
+
+`Verify ModelDock` 工作流分别验证 Linux 后端/SSH/浏览器和 Windows 后端/原生构建。Windows 流程构建 NSIS 安装器，并启动 Tauri/WebView2，通过真实 IPC 检查环境、分类、检测、预览和文件导出。成功后可从 Actions 下载 `ModelDock-windows-x64` 产物。稳定版安装包见 [Releases](https://github.com/whoarei/ModelDock/releases/latest)。
+
+`tests` 与 `scripts/create_fixtures.py` 使用微型 ONNX 测试图（颜色分类和固定检测张量）验证协议、NMS、坐标和任务行为，**不是预训练 EfficientNet/YOLO 权重，也不能用其结果宣称业务精度或模型性能**。仓库不捆绑预训练模型或第三方业务图片。
+
+## SSH 节点要求
+
+本机需要 OpenSSH 的 ssh、sftp、ssh-keyscan；远端需要 Linux x86_64、Python 3.11+、可写用户目录和后台进程存活能力。应用核对主机指纹后部署控制器，用 uv 准备插件 Python。使用密钥文件或 SSH agent；加密私钥请先加载到系统 agent，首版不保存口令。
+
+用户在界面点击“检查并部署”后才写入远端工作目录。移除节点只删除连接配置，不删除远端数据。每次任务与传输都有明确节点归属；上传使用 SFTP、摘要校验和原子重命名。
+
+## 发布维护
+
+应用版本由桌面 package.json、Tauri 配置、Cargo.toml 与控制器版本共同维护；SDK 和参考插件采用各自的兼容版本，不随应用版本一起升级。
+
+推送 `v<应用版本>` 标签会先运行完整验证并构建 NSIS 包。配置仓库 Actions Secrets `TAURI_SIGNING_PRIVATE_KEY` 和 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` 后，构建器可签名并发布稳定版。没有签名 Secret 时仅生成草稿 Release，不能将未签名包发布为在线更新。
+
+本地签名发布时，下载草稿安装包到 `<release-dir>`，使用首次发布的同一私钥：
+
+```sh
+cd apps/desktop
+npm run tauri -- signer sign --private-key-path <private-key-file> --app-version 0.2.0 <installer.exe>
+cd ../..
+uv run python scripts/release_assets.py <release-dir>
+```
+
+将 `.exe.sig`、`latest.json`、`SHA256SUMS` 上传到对应草稿 Release，再运行 `Verify signed application upgrade` 工作流，指定该草稿标签。它从草稿下载真实签名包，以临时低版本客户端测试下载、安装、重启和数据保留；通过后才将草稿发布为 latest。私钥必须独立安全备份；遗失后无法用现有安装版信任的公钥继续更新。仓库只保存公钥。
+
+## 代码布局
+
+```text
+apps/desktop/                 React / TypeScript / Tauri
+packages/controller/          stdlib 控制器、SQLite、uv、SSH、任务监督
+packages/python-sdk/          插件接口、校验、计时、ONNX 适配及 Worker
+plugins/efficientnet/          分类参考插件、SDK wheel 与锁文件
+plugins/yolo/                  检测参考插件、SDK wheel 与锁文件
+scripts/                      可重建资源和小型 ONNX 测试图
+```
+
+Rust 负责桌面系统能力和受控进程桥；本机和远端复用 Python 控制器，避免维护两套任务逻辑。安装目录只含程序资源，环境、权重缓存和任务保存在用户数据目录；可用 `MODELDOCK_DATA_DIR` 指定开发/测试数据目录。
 
 ## 方案文档
 
@@ -46,4 +150,4 @@ node <skill-dir>/scripts/verify.mjs docs/python-plugin-protocol.html --output-di
 
 验证环境的 Chromium 限制 `file://` 导航，因此将 skill 校验脚本的页面入口临时改为本机 HTTP 预览，保留其余检查；未在该环境验证直接打开本地文件。交付 HTML 无外部运行依赖，验证截图、报告和临时 PDF 不纳入仓库。
 
-文档均为方案草案，版本以各文档页标识为准；更新日期：2026-11-13。文档交互验证与应用功能验收分开，本文不表示应用已经实现。
+文档版本以各文档页标识为准，已分别标注当前实现与后续规划；更新日期：2026-11-13。文档交互检查与应用功能验收分别进行。

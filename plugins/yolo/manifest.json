@@ -1,0 +1,8 @@
+{
+  "schema_version":"1","id":"yolo","name":"YOLO 目标检测","version":"0.1.0","sdk_version":">=0.1,<0.2","entrypoint":"adapter:Plugin",
+  "runtime_profiles":[{"id":"onnx-cpu","project_dir":"runtime/cpu","platforms":["windows-x86_64","linux-x86_64"],"providers":["CPUExecutionProvider"]}],
+  "models":[
+    {"id":"yolov8n","name":"YOLOv8n · 标准检测导出","task":"detection","result_schema":"detection/1","weight_formats":["onnx"],"config":"configs/detection.json","parameter_schema":"schemas/params.json","capabilities":{"timing_mode":"staged","pure_inference_benchmark":false}},
+    {"id":"yolov8s","name":"YOLOv8s · 标准检测导出","task":"detection","result_schema":"detection/1","weight_formats":["onnx"],"config":"configs/detection.json","parameter_schema":"schemas/params.json","capabilities":{"timing_mode":"staged","pure_inference_benchmark":false}}
+  ]
+}

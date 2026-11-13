@@ -1,0 +1,138 @@
+name: Verify ModelDock
+on:
+  push:
+    branches: [main, 'feat/**']
+    tags: ['v*']
+    paths-ignore: ['docs/**', 'README.md']
+  pull_request:
+    paths-ignore: ['docs/**', 'README.md']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: verify-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.13.6'
+          python-version: '3.12.14'
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - run: uv sync --locked
+      - run: uv run ruff check packages plugins scripts tests
+      - run: uv run pytest
+      - run: npm ci
+        working-directory: apps/desktop
+      - run: npm run build
+        working-directory: apps/desktop
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/desktop
+      - run: npx playwright test
+        working-directory: apps/desktop
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-test-results
+          path: apps/desktop/test-results
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.13.6'
+          python-version: '3.12.14'
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+          cache-on-failure: true
+      - run: uv sync --locked
+      - run: uv run pytest
+      - run: uv run python scripts/prepare_resources.py --rust-licenses
+      - run: npm ci
+        working-directory: apps/desktop
+      - run: cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml -- --check
+      - name: Build Windows installer
+        working-directory: apps/desktop
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if ($env:TAURI_SIGNING_PRIVATE_KEY) {
+            npm run tauri -- build --bundles nsis --ci
+          } else {
+            '{"bundle":{"createUpdaterArtifacts":false}}' | Set-Content -Encoding utf8 unsigned-build.json
+            npm run tauri -- build --bundles nsis --ci --config unsigned-build.json
+          }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - run: node scripts/native-smoke.mjs
+        working-directory: apps/desktop
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-native-test-results
+          path: test-results/native-ui
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ModelDock-windows-x64
+          path: |
+            apps/desktop/src-tauri/target/release/bundle/nsis/*-setup.exe
+            apps/desktop/src-tauri/target/release/bundle/nsis/*-setup.exe.sig
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [linux, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: ModelDock-windows-x64
+          path: release-assets
+      - name: Prepare verified release assets
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python - <<'PY'
+          import json,os,pathlib
+          version=json.loads(pathlib.Path('apps/desktop/package.json').read_text())['version']
+          assert os.environ['RELEASE_TAG'] == 'v'+version, 'Tag must match application version'
+          PY
+          python scripts/release_assets.py release-assets --allow-unsigned
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$RELEASE_TAG" --verify-tag --draft --title "ModelDock $RELEASE_TAG" --notes-file "docs/releases/${RELEASE_TAG#v}.md" release-assets/*
+          if test -f release-assets/latest.json; then
+            gh release edit "$RELEASE_TAG" --draft=false --latest
+          else
+            echo 'Draft created. Sign the installer locally and attach latest.json before publishing.'
+          fi

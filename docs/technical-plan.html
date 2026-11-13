@@ -688,24 +688,26 @@
     </div>
     <nav aria-label="文档目录">
       <a href="#decisions"><span>01</span>设计约束与技术决策</a>
-      <a href="#architecture"><span>02</span>系统分层与组件</a>
-      <a href="#domain"><span>03</span>领域模型与持久化</a>
-      <a href="#plugin-package"><span>04</span>插件包与运行方案的系统集成</a>
-      <a href="#python-sdk"><span>05</span>Python 插件协议的系统边界</a>
-      <a href="#uv-environments"><span>06</span>uv 环境准备与生命周期</a>
-      <a href="#storage"><span>07</span>目录布局与文件归属</a>
-      <a href="#executor"><span>08</span>执行器接口与通信协议</a>
-      <a href="#ssh"><span>09</span>SSH 部署、后台执行与重连</a>
-      <a href="#task-lifecycle"><span>10</span>任务调度与状态一致性</a>
-      <a href="#benchmark"><span>11</span>性能测试边界与可复现性</a>
-      <a href="#safety-compatibility"><span>12</span>兼容性、凭据与运行边界</a>
-      <a href="#repository"><span>13</span>代码组织与发布形态</a>
-      <a href="#validation"><span>14</span>验证计划与产品验收映射</a>
-      <a href="#implementation"><span>15</span>实施顺序、风险与待决事项</a>
+      <a href="#implementation-0-1-0"><span>02</span>0.1.0 当前实现范围</a>
+      <a href="#architecture"><span>03</span>系统分层与组件</a>
+      <a href="#domain"><span>04</span>领域模型与持久化</a>
+      <a href="#plugin-package"><span>05</span>插件包与运行方案的系统集成</a>
+      <a href="#python-sdk"><span>06</span>Python 插件协议的系统边界</a>
+      <a href="#uv-environments"><span>07</span>uv 环境准备与生命周期</a>
+      <a href="#storage"><span>08</span>目录布局与文件归属</a>
+      <a href="#executor"><span>09</span>执行器接口与通信协议</a>
+      <a href="#ssh"><span>10</span>SSH 部署、后台执行与重连</a>
+      <a href="#task-lifecycle"><span>11</span>任务调度与状态一致性</a>
+      <a href="#benchmark"><span>12</span>性能测试边界与可复现性</a>
+      <a href="#safety-compatibility"><span>13</span>兼容性、凭据与运行边界</a>
+      <a href="#repository"><span>14</span>代码组织与发布形态</a>
+      <a href="#validation"><span>15</span>验证计划与产品验收映射</a>
+      <a href="#implementation"><span>16</span>实施顺序、风险与待决事项</a>
+      <a href="#application-updates"><span>17</span>签名更新与发布流程</a>
     </nav>
     <div class="foot">
       <div class="theme-control" hidden><label for="theme-select">文档配色</label><select id="theme-select"><optgroup label="经典配色"><option value="classic">经典蓝</option><option value="slate">石墨灰</option><option value="forest">森林绿</option></optgroup><optgroup label="亮色配色"><option value="sky">蓝色 · 亮色</option><option value="mint">绿色 · 亮色</option><option value="yellow">黄色 · 亮色</option><option value="pink">粉色 · 亮色</option><option value="apricot" selected>橙色 · 默认</option><option value="lavender">紫色 · 亮色</option></optgroup><optgroup label="深色配色"><option value="dark">深色</option></optgroup></select></div>
-      更新于 2026-11-13<br>版本 0.2 方案草案<br>单文件 HTML · 支持离线阅读
+      更新于 2026-11-13<br>版本 0.4<br>单文件 HTML · 支持离线阅读
       <button type="button" id="print-button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7zM17 11h.01"/></svg>打印 / 保存 PDF</button>
     </div>
   </aside>
@@ -713,7 +715,7 @@
     <header class="hero">
       <div class="eyebrow">系统设计 / 接口草案 / 待实现与验证</div>
       <h1>ModelDock 技术方案</h1>
-      <p class="lead">以节点为执行边界，以插件为部署和环境维护单元。统一 Python 接入协议，将本机和 SSH 执行封装在同一任务模型下。</p><div class="callout"><strong>本文定义拟实现的系统设计。</strong>尚无已发布 SDK 或可运行程序。产品范围见 <a href="product-plan.html">产品方案</a>；插件清单、Python API、参数和结果格式以独立的 <a href="python-plugin-protocol.html">Python 插件协议</a> 为准。</div>
+      <p class="lead">以节点为执行边界，以插件为部署和环境维护单元。统一 Python 接入协议，将本机和 SSH 执行封装在同一任务模型下。</p><div class="callout"><strong>本文同时标明整体设计和 0.1.0 的实现选择。</strong>Rust 提供桌面系统能力和受控进程桥，本机与远端共享 Python 控制器。插件字段与 API 以独立的 <a href="python-plugin-protocol.html">Python 插件协议</a> 为准，产品范围见 <a href="product-plan.html">产品方案</a>。</div>
     </header>
     <section class="section" id="decisions">
       <div class="section-head"><span class="section-num">01</span><h2>设计约束与技术决策</h2></div>
@@ -721,21 +723,26 @@
 <p>首个完整版本按 M0/M1/M2/M3 分阶段交付，包括 Windows 本机执行和 SSH Linux 执行。首版每节点最多运行一个测试任务，避免平台内任务争用资源影响测试；外部进程负载仍需记录。</p>
     </section>
 
+    <section class="section" id="implementation-0-1-0">
+      <div class="section-head"><span class="section-num">02</span><h2>0.1.0 当前实现范围</h2></div>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>0.1.0 实现与边界</th></tr></thead><tbody><tr><td>桌面桥</td><td>Tauri 命令经受控 Python 进程传入 {command,args}，返回 {ok,data} 或 {ok,error}；正式应用不启动 HTTP 服务。</td></tr><tr><td>控制器</td><td>packages/controller 共享本机与 SSH 的 SQLite、插件、环境和任务逻辑；Rust 负责启动、超时、用户数据目录及导出写入。</td></tr><tr><td>远程执行</td><td>OpenSSH 命令请求/响应与 SFTP；核对指纹后部署标准库控制器，任务监督进程脱离 SSH 会话。首版通过轮询获取进度，尚无持续事件订阅接口。</td></tr><tr><td>SDK / Worker</td><td>均包含在 modeldock-sdk 0.1.0 wheel 中，随插件锁定；每个任务启动插件环境中的 Worker。</td></tr><tr><td>计时</td><td>管线模式；处理窗口包含预测、校验与结果记录开销，排除加载、预热、预览生成和网络。分段由 StagedPlugin 统一测量。</td></tr><tr><td>验证</td><td>后端覆盖真实 SSH/SFTP、中断恢复、取消、重测及中文/空格路径；浏览器和 Windows 原生验证分别运行，状态以 CI 为准。</td></tr></tbody></table></div>
+    </section>
+
     <section class="section" id="architecture">
-      <div class="section-head"><span class="section-num">02</span><h2>系统分层与组件</h2></div>
-<figure><div class="diagram"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 495" role="img" aria-labelledby="technical-architecture-title technical-architecture-desc"><title id="technical-architecture-title">ModelDock 分层架构</title><desc id="technical-architecture-desc">界面通过 Rust 应用服务访问执行器；执行器统一调用节点控制器；工作进程运行在各插件环境中。</desc><defs><marker id="technical-architecture-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="var(--accent, #b84934)"/></marker></defs><path d="M460 90 L460 115" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#technical-architecture-arrow)"/><path d="M330 205 L225 245" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#technical-architecture-arrow)"/><path d="M590 205 L695 245" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#technical-architecture-arrow)"/><path d="M225 335 L225 380" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#technical-architecture-arrow)"/><path d="M695 335 L695 380" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#technical-architecture-arrow)"/><rect x="250" y="15" width="420" height="75" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="460.0" y="46.5" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">React / TypeScript 界面</text><text x="460.0" y="71.5" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">测试 / 插件 / 模型 / 节点 / 记录</text><rect x="250" y="125" width="420" height="80" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="460.0" y="159.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">Rust 应用服务</text><text x="460.0" y="184.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">任务调度 / 插件部署 / SQLite / 文件索引</text><rect x="40" y="255" width="370" height="80" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="225.0" y="289.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">LocalExecutor</text><text x="225.0" y="314.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">本机进程 / 文件 / 事件</text><rect x="510" y="255" width="370" height="80" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="695.0" y="289.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">SshExecutor</text><text x="695.0" y="314.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">SSH 控制 / SFTP / 重连</text><rect x="40" y="390" width="370" height="80" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="225.0" y="424.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">本机插件工作进程</text><text x="225.0" y="449.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">插件 A 环境 或 插件 B 环境</text><rect x="510" y="390" width="370" height="80" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="695.0" y="424.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">远端控制器 → 插件工作进程</text><text x="695.0" y="449.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">持久任务 / 专属环境 / 产物</text></svg></div><figcaption class="caption">界面通过 Rust 应用服务访问执行器；执行器统一调用节点控制器；工作进程运行在各插件环境中。</figcaption></figure><div class="table-wrap"><table><thead><tr><th scope="col">组件</th><th scope="col">职责</th><th scope="col">禁止混入的职责</th></tr></thead><tbody><tr><td>前端</td><td>页面、参数表单、可视化、状态与日志展示。</td><td>执行 Python、拼接 SSH 命令、保存凭据。</td></tr><tr><td>Rust 应用服务</td><td>插件安装、节点连接、环境准备、任务状态、产物索引与导出。</td><td>实现具体模型的预处理或后处理。</td></tr><tr><td>节点控制器</td><td>能力检查、任务登记、队列、事件、取消和工作进程监督。</td><td>依赖具体模型框架。</td></tr><tr><td>Python SDK / Worker</td><td>加载入口、验证协议、计时辅助、日志与结果传输。</td><td>桌面 UI 与 SSH 文件分发。</td></tr><tr><td>Python 插件</td><td>模型加载、前后处理、推理、设备同步及能力声明。</td><td>依赖桌面进程或直接操作界面。</td></tr></tbody></table></div>
+      <div class="section-head"><span class="section-num">03</span><h2>系统分层与组件</h2></div>
+<figure><div class="diagram"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 495" role="img" aria-labelledby="technical-architecture-title technical-architecture-desc"><title id="technical-architecture-title">ModelDock 分层架构</title><desc id="technical-architecture-desc">界面通过 Rust 桌面桥 / Python 服务访问执行器；执行器统一调用节点控制器；工作进程运行在各插件环境中。</desc><defs><marker id="technical-architecture-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="var(--accent, #b84934)"/></marker></defs><path d="M460 90 L460 115" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#technical-architecture-arrow)"/><path d="M330 205 L225 245" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#technical-architecture-arrow)"/><path d="M590 205 L695 245" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#technical-architecture-arrow)"/><path d="M225 335 L225 380" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#technical-architecture-arrow)"/><path d="M695 335 L695 380" stroke="var(--accent, #b84934)" stroke-width="2" fill="none" marker-end="url(#technical-architecture-arrow)"/><rect x="250" y="15" width="420" height="75" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="460.0" y="46.5" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">React / TypeScript 界面</text><text x="460.0" y="71.5" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">测试 / 插件 / 模型 / 节点 / 记录</text><rect x="250" y="125" width="420" height="80" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="460.0" y="159.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">Rust 桌面桥 / Python 服务</text><text x="460.0" y="184.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">受控 IPC / 共享调度 / SQLite / 文件索引</text><rect x="40" y="255" width="370" height="80" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="225.0" y="289.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">LocalExecutor</text><text x="225.0" y="314.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">本机进程 / 文件 / 事件</text><rect x="510" y="255" width="370" height="80" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="695.0" y="289.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">SshExecutor</text><text x="695.0" y="314.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">SSH 控制 / SFTP / 重连</text><rect x="40" y="390" width="370" height="80" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="225.0" y="424.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">本机插件工作进程</text><text x="225.0" y="449.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">插件 A 环境 或 插件 B 环境</text><rect x="510" y="390" width="370" height="80" rx="9" fill="var(--accent-soft, #fff0ec)" stroke="var(--diagram-accent-line, #d79586)" stroke-width="1.5"/><text x="695.0" y="424.0" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink, #404040)">远端控制器 → 插件工作进程</text><text x="695.0" y="449.0" text-anchor="middle" font-size="13" fill="var(--ink-secondary, #626262)">持久任务 / 专属环境 / 产物</text></svg></div><figcaption class="caption">界面通过 Rust 桌面桥 / Python 服务访问执行器；执行器统一调用节点控制器；工作进程运行在各插件环境中。</figcaption></figure><div class="table-wrap"><table><thead><tr><th scope="col">组件</th><th scope="col">职责</th><th scope="col">禁止混入的职责</th></tr></thead><tbody><tr><td>前端</td><td>页面、参数表单、可视化、状态与日志展示。</td><td>执行 Python、拼接 SSH 命令、保存凭据。</td></tr><tr><td>Rust 桌面桥 / Python 服务</td><td>插件安装、节点连接、环境准备、任务状态、产物索引与导出。</td><td>实现具体模型的预处理或后处理。</td></tr><tr><td>节点控制器</td><td>能力检查、任务登记、队列、事件、取消和工作进程监督。</td><td>依赖具体模型框架。</td></tr><tr><td>Python SDK / Worker</td><td>加载入口、验证协议、计时辅助、日志与结果传输。</td><td>桌面 UI 与 SSH 文件分发。</td></tr><tr><td>Python 插件</td><td>模型加载、前后处理、推理、设备同步及能力声明。</td><td>依赖桌面进程或直接操作界面。</td></tr></tbody></table></div>
 <p>远端控制器使用平台准备的 Python 与标准库；模型框架只安装在插件环境。控制器自身按版本部署，不形成面向用户的另一个“环境管理”入口。</p>
     </section>
 
     <section class="section" id="domain">
-      <div class="section-head"><span class="section-num">03</span><h2>领域模型与持久化</h2></div>
+      <div class="section-head"><span class="section-num">04</span><h2>领域模型与持久化</h2></div>
 <div class="table-wrap"><table><thead><tr><th scope="col">实体</th><th scope="col">关键字段</th><th scope="col">约束</th></tr></thead><tbody><tr><td>Node</td><td>id、kind、alias、platform、work_root、capabilities、credential_ref、reachability。</td><td>凭据仅保存系统凭据库引用；本机节点由应用创建。</td></tr><tr><td>PluginPackage</td><td>plugin_id、version、package_sha256、sdk_range、manifest。</td><td>包内容按摘要识别，版本号相同但摘要不同视为不同构件并提示。</td></tr><tr><td>SupportedModel</td><td>plugin_id、model_id、task、formats、config、parameter_schema。</td><td>model_id 在插件内唯一。</td></tr><tr><td>PluginInstallation</td><td>node_id、plugin_id、active_version、profile_id、environment_fingerprint、state。</td><td>node_id + plugin_id 唯一；只有一个启用环境。</td></tr><tr><td>ModelInstance</td><td>id、name、plugin_id、model_id、weights_digest、labels_digest、config_snapshot。</td><td>逻辑实例不依赖某一个物理路径；修改形成新的配置修订。</td></tr><tr><td>ModelPlacement</td><td>instance_id、node_id、weight_ref、labels_ref、validation_state。</td><td>记录节点文件引用；验证内容指纹及加载兼容性。</td></tr><tr><td>Task / Attempt</td><td>task_id、node_id、instance_revision、plugin_snapshot、input_manifest、state、metrics。</td><td>每次重试创建新 task_id 并保存 retry_of；运行中配置不可变。</td></tr><tr><td>TaskEvent / Artifact</td><td>task_id、seq、kind、payload；artifact_id、location、sha256、size。</td><td>事件按任务单调递增；产物状态区分远端存在与本机已下载。</td></tr></tbody></table></div>
 <p>本机 SQLite 保存配置、任务镜像与产物索引。远端 tasks.sqlite 是已提交远程任务的状态权威；本机通过事件序号增量同步。单个任务的状态更新和事件写入在同一远端事务中完成。</p>
 <p>删除逻辑记录、删除节点文件和删除缓存分别处理。卸载插件保留模型实例及测试记录；移除节点连接保留历史节点快照，不自动执行远端删除。</p>
     </section>
 
     <section class="section" id="plugin-package">
-      <div class="section-head"><span class="section-num">04</span><h2>插件包与运行方案的系统集成</h2></div>
+      <div class="section-head"><span class="section-num">05</span><h2>插件包与运行方案的系统集成</h2></div>
 <p>插件包由清单、Python 代码、支持模型配置与参数描述，以及运行方案依赖项目组成。模型权重独立管理；插件列表与模型实例分开建模。</p>
 <p>字段与目录的完整约定移至 <a href="python-plugin-protocol.html#package-layout">插件目录与交付包</a>、<a href="python-plugin-protocol.html#manifest">插件清单</a> 和 <a href="python-plugin-protocol.html#model-catalog">支持模型与参数描述</a>。本文保留部署和生命周期职责，不重复维护字段定义。</p>
 <p>平台负责安全解包、摘要校验、兼容性检查、节点安装和启用。一个节点安装只启用一个运行方案；CPU/GPU 方案分别锁定依赖，切换方案时按下文的 uv 生命周期准备候选环境。</p>
@@ -743,7 +750,7 @@
     </section>
 
     <section class="section" id="python-sdk">
-      <div class="section-head"><span class="section-num">05</span><h2>Python 插件协议的系统边界</h2></div>
+      <div class="section-head"><span class="section-num">06</span><h2>Python 插件协议的系统边界</h2></div>
 <p>插件作者使用统一 load / predict / close 接口，本机和 SSH 节点不改变 Python API。SDK/Worker 负责类型与结果校验、上下文、计时辅助、日志和取消；插件只负责模型能力。</p>
 <p>独立的 <a href="python-plugin-protocol.html">Python 插件协议</a> 是清单、接口与结果格式的定义来源，重点包括：</p>
 <ul><li><a href="python-plugin-protocol.html#python-api">调用生命周期</a>、<a href="python-plugin-protocol.html#context-input">上下文与输入</a>。</li><li><a href="python-plugin-protocol.html#classification">分类结果</a>、<a href="python-plugin-protocol.html#detection">检测结果</a>及<a href="python-plugin-protocol.html#visualization-artifacts">可视化产物</a>。</li><li><a href="python-plugin-protocol.html#timing">计时扩展</a>、<a href="python-plugin-protocol.html#errors-cancellation">错误和取消</a>、<a href="python-plugin-protocol.html#versioning-validation">版本兼容</a>。</li></ul>
@@ -751,7 +758,7 @@
     </section>
 
     <section class="section" id="uv-environments">
-      <div class="section-head"><span class="section-num">06</span><h2>uv 环境准备与生命周期</h2></div>
+      <div class="section-head"><span class="section-num">07</span><h2>uv 环境准备与生命周期</h2></div>
 <p>uv 作为随应用分发并固定版本的工具。插件安装、更新或修复时创建环境；测试运行直接启动已准备环境中的 Python，不执行隐式依赖解析或更新。</p>
 <div class="table-wrap"><table><thead><tr><th scope="col">阶段</th><th scope="col">行为</th><th scope="col">结果</th></tr></thead><tbody><tr><td>兼容检查</td><td>检查平台、方案、SDK、Python 要求与可写目录。</td><td>不兼容时停止准备并返回明确原因。</td></tr><tr><td>解释器准备</td><td>使用 uv 管理的指定 Python 版本，记录实际完整版本与可执行文件。</td><td>不依赖用户全局 Python，不改系统默认版本。</td></tr><tr><td>环境同步</td><td>指定候选环境目录，按 uv.lock 执行锁定同步。</td><td>保留依赖日志与环境指纹。</td></tr><tr><td>健康检查</td><td>导入 SDK/入口、检查后端和设备，必要时执行样例加载。</td><td>区分插件环境可用与某个模型实例可用。</td></tr><tr><td>启用</td><td>节点内加插件操作锁，任务排空后切换 current 指针。</td><td>检查失败保留旧环境；成功后按策略清理旧目录。</td></tr><tr><td>修复/卸载</td><td>按指纹重建，或在无活动任务时删除该节点插件安装。</td><td>不删除独立模型权重和历史结果。</td></tr></tbody></table></div><pre><code class="language-text"># 概念命令：由应用传递参数与环境变量，不让用户手动执行。
 # UV_PROJECT_ENVIRONMENT 指向当前候选环境的绝对路径。
@@ -766,7 +773,7 @@ uv sync --project &lt;plugin&gt;/runtime/cpu --locked --no-dev
     </section>
 
     <section class="section" id="storage">
-      <div class="section-head"><span class="section-num">07</span><h2>目录布局与文件归属</h2></div>
+      <div class="section-head"><span class="section-num">08</span><h2>目录布局与文件归属</h2></div>
 <p>本机可变数据放在用户数据目录，例如 <code>%LOCALAPPDATA%/ModelDock</code>；安装目录只存程序和工具。远端默认使用 <code>$XDG_DATA_HOME/modeldock</code>，未设置时使用 <code>~/.local/share/modeldock</code>，也可选其他可写目录。</p>
 <pre><code class="language-text">&lt;data-root&gt;/
   app.sqlite                      # 本机配置；远端用 tasks.sqlite
@@ -788,23 +795,12 @@ uv sync --project &lt;plugin&gt;/runtime/cpu --locked --no-dev
     </section>
 
     <section class="section" id="executor">
-      <div class="section-head"><span class="section-num">08</span><h2>执行器接口与通信协议</h2></div>
-<p>Rust 定义与传输无关的执行器接口；本机和 SSH 实现返回同样的领域对象和事件。</p>
-<div class="table-wrap"><table><thead><tr><th scope="col">方法</th><th scope="col">作用</th></tr></thead><tbody><tr><td>probe_node()</td><td>返回平台、目录、设备、运行器版本和后台任务能力。</td></tr><tr><td>prepare_plugin(plugin, profile)</td><td>安装/检查插件环境，返回阶段进度及安装指纹。</td></tr><tr><td>validate_model(instance)</td><td>验证节点文件、模型加载和输出兼容。</td></tr><tr><td>submit_task(task_id, task_spec)</td><td>幂等登记并入队，返回已登记任务状态。</td></tr><tr><td>get_task(task_id) / watch_events(task_id, after_seq)</td><td>获取状态快照和增量事件。</td></tr><tr><td>cancel_task(task_id)</td><td>登记取消请求，等待执行端确认终态。</td></tr><tr><td>fetch_artifact(artifact_id)</td><td>取回指定结果或按需预览。</td></tr></tbody></table></div>
-<p>控制与事件采用 UTF-8 JSON Lines，每行一个完整消息。消息具有协议版本、请求/任务标识、类型和负载；任务事件增加单调序号。标准输出专用于协议，控制器日志写标准错误，插件输出由 Worker 捕获为日志事件。</p>
-<pre><code class="language-json">{
-  &quot;protocol_version&quot;: &quot;1&quot;,
-  &quot;task_id&quot;: &quot;&lt;uuid&gt;&quot;,
-  &quot;seq&quot;: 42,
-  &quot;type&quot;: &quot;progress&quot;,
-  &quot;payload&quot;: {&quot;completed&quot;: 12, &quot;total&quot;: 100, &quot;failed&quot;: 1}
-}</code></pre>
-<p>模型权重、图片和大张量通过文件/产物引用传递。每条消息设置大小上限并校验结构；产物引用解析到明确节点与任务根。事件按 <code>node_id + task_id + seq</code> 去重，日志和进度限流，避免高频消息阻塞推理。</p>
-<p>同一 task_id 与相同配置摘要重复提交，返回原任务；摘要不一致返回冲突。网络超时后先查询原 task_id，避免重复执行。重试操作生成新 task_id。</p>
+      <div class="section-head"><span class="section-num">09</span><h2>执行器接口与通信协议</h2></div>
+<p>应用使用统一命令接口，经 Rust 桥调用 Python 控制器；控制器依据 node_id 选择本机或 SSH 转发。以下为 0.1.0 命令映射。</p><div class="table-wrap"><table><thead><tr><th>能力</th><th>0.1.0 实现与边界</th></tr></thead><tbody><tr><td>state / probe</td><td>节点能力、插件与安装状态、模型实例、最近任务。</td></tr><tr><td>import_plugin / install_plugin / uninstall_plugin</td><td>包登记、异步环境准备、环境卸载。</td></tr><tr><td>create_model</td><td>权重/类别导入并执行 load/close 检查。</td></tr><tr><td>start_task / retry_task</td><td>幂等任务登记；按已记录配置创建新的重测任务。</td></tr><tr><td>task_detail / cancel_task</td><td>状态、样本结果、日志和报告；执行端确认取消。</td></tr><tr><td>preview / export</td><td>按需获取原图/产物预览及 JSON/CSV 报告。</td></tr></tbody></table></div><p>控制消息为 UTF-8 JSON。插件 stdout/stderr 作为日志，不由插件手写应用协议。任务状态更新和内部事件记录在 SQLite 中提交，首版界面定期查询；连续 JSON Lines 事件订阅属于后续接口。</p><p>相同 task_id 与相同配置重复提交返回原任务，不同配置返回冲突。网络超时后先查询原 task_id。原始权重和图片通过文件传输，预览使用有界图像数据；任务所在节点与路径来源明确分开。</p>
     </section>
 
     <section class="section" id="ssh">
-      <div class="section-head"><span class="section-num">09</span><h2>SSH 部署、后台执行与重连</h2></div>
+      <div class="section-head"><span class="section-num">10</span><h2>SSH 部署、后台执行与重连</h2></div>
 <h3>连接与部署</h3>
 <ol><li>Rust 建立 SSH 会话并验证 known_hosts/主机指纹；首次连接由用户核对，指纹变化时阻止静默信任。</li><li>通过 SFTP 创建可写工作目录，上传固定版本工具、节点控制器和插件构件，校验摘要。</li><li>在节点本地用 uv 准备插件环境。依赖从远端可访问的源下载，必要时走明确配置的镜像或离线包。</li><li>运行能力检查，包括后台任务在 SSH 断开后的存活测试。失败时显示不受支持的能力及原因。</li></ol>
 <h3>任务执行</h3>
@@ -818,7 +814,7 @@ uv sync --project &lt;plugin&gt;/runtime/cpu --locked --no-dev
     </section>
 
     <section class="section" id="task-lifecycle">
-      <div class="section-head"><span class="section-num">10</span><h2>任务调度与状态一致性</h2></div>
+      <div class="section-head"><span class="section-num">11</span><h2>任务调度与状态一致性</h2></div>
 <pre><code class="language-text">CREATED → QUEUED → PREPARING → RUNNING → SUCCEEDED
                                 ├──→ PARTIAL_FAILED
                                 ├──→ FAILED
@@ -832,7 +828,7 @@ QUEUED / PREPARING 也可接收取消；准备失败进入 FAILED。
     </section>
 
     <section class="section" id="benchmark">
-      <div class="section-head"><span class="section-num">11</span><h2>性能测试边界与可复现性</h2></div>
+      <div class="section-head"><span class="section-num">12</span><h2>性能测试边界与可复现性</h2></div>
 <h3>计时边界</h3>
 <div class="table-wrap"><table><thead><tr><th scope="col">字段</th><th scope="col">定义</th></tr></thead><tbody><tr><td>decode_ms</td><td>节点本地读取与解码输入，不含网络上传；记录是否预加载。</td></tr><tr><td>preprocess_ms</td><td>图像缩放、裁剪、颜色/布局和归一化转换。</td></tr><tr><td>inference_ms</td><td>推理调用及必要的设备同步，具体是否包含设备拷贝在后端描述中注明。</td></tr><tr><td>postprocess_ms</td><td>输出解析、分类排序、NMS、坐标还原等。</td></tr><tr><td>sample_total_ms</td><td>从本地读取开始到得到统一预测结果；不含 UI 绘制、输出图片写盘和网络。</td></tr><tr><td>processing_wall_ms</td><td>正式处理循环的墙钟时间；不含模型加载、预热和传输。</td></tr><tr><td>artifact_write_ms / transfer_ms</td><td>结果产物落盘、上传及下载分开计时。</td></tr><tr><td>node_task_wall_ms / client_wall_ms</td><td>节点任务从准备到终态；客户端从提交到所需结果取回，分别记录。</td></tr></tbody></table></div>
 <p>正式测量默认预热 10 次、执行 100 次、batch=1、并发=1。模型加载单独计时。采用节点上的单调高精度时钟；GPU 按后端需要在测量边界同步，不能用主机与客户端时钟相减计算推理时长。</p>
@@ -844,43 +840,39 @@ QUEUED / PREPARING 也可接收取消；准备失败进入 FAILED。
     </section>
 
     <section class="section" id="safety-compatibility">
-      <div class="section-head"><span class="section-num">12</span><h2>兼容性、凭据与运行边界</h2></div>
+      <div class="section-head"><span class="section-num">13</span><h2>兼容性、凭据与运行边界</h2></div>
 <div class="table-wrap"><table><thead><tr><th scope="col">方面</th><th scope="col">设计约束</th></tr></thead><tbody><tr><td>插件信任</td><td>Python 插件以节点用户权限执行任意代码；虚拟环境用于依赖隔离，非安全沙箱。首版导入可信插件。</td></tr><tr><td>系统权限</td><td>本机和远端优先用户目录安装，不默认请求管理员/root 权限或修改驱动。</td></tr><tr><td>凭据</td><td>系统凭据库/SSH agent 持有身份材料；普通日志与报告不记录私钥、口令或连接令牌。</td></tr><tr><td>文件边界</td><td>解包防路径穿越；产物路径在任务根内；外部文件引用明确所属节点，自动清理不触及用户原始目录。</td></tr><tr><td>Tauri 能力</td><td>前端只调用受限 Rust 命令，配置 CSP；本地静态应用不加载第三方可执行页面。</td></tr><tr><td>系统兼容</td><td>首批 Windows 10/11 x64；远端拟以 Ubuntu 22.04/24.04 LTS x64 建立验收矩阵。具体支持以验证记录为准。</td></tr><tr><td>GPU 兼容</td><td>检查选定 Provider、运行库和驱动组合，不能仅根据发现显卡判断可用。CPU 与 GPU 方案分别锁定。</td></tr><tr><td>资源与日志</td><td>任务有超时和取消边界；日志限速及轮转，资源采样低频执行并记录配置。</td></tr></tbody></table></div>
 <p>相同锁文件能约束包版本，但不会保证任意平台、原生库和驱动组合都可运行。插件声明的支持平台必须有对应构建/安装与加载测试记录。</p>
     </section>
 
     <section class="section" id="repository">
-      <div class="section-head"><span class="section-num">13</span><h2>代码组织与发布形态</h2></div>
-<pre><code class="language-text">ModelDock/                        # 下面是未来代码布局建议
-  apps/desktop/                   # React / TypeScript
-  apps/desktop/src-tauri/          # Rust 应用服务与执行器
-  packages/python-sdk/            # 插件接口、类型、校验与计时
-  packages/node-controller/       # 节点控制与任务监督
-  packages/python-worker/         # 插件环境内运行入口
-  plugins/efficientnet/            # 参考分类插件
-  plugins/yolo/                    # 参考检测插件
-  fixtures/                       # 可分发的小型测试样本
-  docs/
-    product-plan.html
-    technical-plan.html
-    python-plugin-protocol.html
-    sources/                      # 各文档的可编辑渲染输入</code></pre>
-<p>当前仓库交付产品方案、技术方案与独立的 Python 插件协议及其源数据，不预先放置未验证的空应用框架。实现阶段再建立上述目录。</p>
-<p>Windows 发布包包含 Tauri 应用、固定版本 uv、节点控制器和必要的平台构件。安装器检查 WebView2；在线版提供明确的首次下载流程，完整离线分发需包含相应运行时与依赖。</p>
-<p>Python 解释器和大型框架按节点/插件准备，权重独立分发。远端工具从本机包或经验证的下载来源部署，记录版本与摘要。代码签名与自动更新在实际分发阶段确定，不把 Tauri 外壳大小视作完整安装体积。</p>
+      <div class="section-head"><span class="section-num">14</span><h2>代码组织与发布形态</h2></div>
+<pre><code>apps/desktop/                    React / TypeScript / Tauri
+packages/controller/modeldock/    共享标准库控制器与 SSH 执行
+packages/python-sdk/              SDK 与 Worker
+plugins/efficientnet/             分类参考插件、SDK wheel 和锁文件
+plugins/yolo/                     检测参考插件、SDK wheel 和锁文件
+scripts/                         资源生成与 ONNX 测试图
+tests/                           后端与实际 SSH/SFTP 集成检查
+docs/                            产品、技术、协议与可编辑源数据</code></pre><p>Windows 资源包含固定版本 uv、Python 控制代码、参考插件与第三方许可。Python 解释器及大型依赖在用户数据目录准备，首次准备需要联网；业务权重不捆绑。</p><p>CI 构建 NSIS 安装包，并以 Windows WebView2/Tauri IPC 检查环境、推理、预览与文件导出。人工安装与文件选择对话框验收独立于自动化检查；尚未打正式发布 tag。</p>
     </section>
 
     <section class="section" id="validation">
-      <div class="section-head"><span class="section-num">14</span><h2>验证计划与产品验收映射</h2></div>
+      <div class="section-head"><span class="section-num">15</span><h2>验证计划与产品验收映射</h2></div>
 <div class="table-wrap"><table><thead><tr><th scope="col">层级</th><th scope="col">关键验证</th><th scope="col">对应产品目标</th></tr></thead><tbody><tr><td>清单和 SDK</td><td>重复 model_id、非法路径、版本不兼容、参数校验、类别及框语义。</td><td>P-02、P-04、P-05</td></tr><tr><td>环境生命周期</td><td>干净节点安装、锁文件重建、两个插件隔离、失败升级回滚、修复不丢数据。</td><td>P-01、P-03、P-12</td></tr><tr><td>本机模型</td><td>分类与检测参考输出容差、坐标还原、损坏图片、异常退出和取消。</td><td>P-05、P-06、P-10</td></tr><tr><td>性能协议</td><td>预热排除、分段计时、GPU 同步、吞吐分母、样本/失败数及报告快照。</td><td>P-07</td></tr><tr><td>远程集成</td><td>部署和文件摘要、远端路径、同任务幂等、事件重放、重连与产物取回。</td><td>P-08、P-09</td></tr><tr><td>故障注入</td><td>SSH 中断、磁盘不足、工作进程退出、监督进程恢复、主机重启、取消竞争。</td><td>P-09、P-10</td></tr><tr><td>发布与凭据</td><td>干净 Windows 安装、WebView2、路径含中文/空格、日志脱敏及离线复用。</td><td>P-01、P-11、P-12</td></tr></tbody></table></div>
 <p>参考输出测试使用可分发且来源清楚的权重/样本，并记录参考实现版本。ONNX 数值容差按模型和 Provider 制定；检测比较包括类别、分数和框匹配，不能只检查“有输出”。</p>
 <p>文档自身使用 rtd-html-docs 的验证脚本检查锚点、离线依赖、10 套配色及保存恢复、桌面/移动布局、无存储/无 JavaScript 回退、打印入口和打印配色。文档验证结果不代表应用功能已通过验收。</p>
     </section>
 
     <section class="section" id="implementation">
-      <div class="section-head"><span class="section-num">15</span><h2>实施顺序、风险与待决事项</h2></div>
+      <div class="section-head"><span class="section-num">16</span><h2>实施顺序、风险与待决事项</h2></div>
 <div class="table-wrap"><table><thead><tr><th scope="col">阶段</th><th scope="col">技术交付</th><th scope="col">退出条件</th></tr></thead><tbody><tr><td>M0</td><td>协议草案落地、SDK PoC、uv CPU 环境、参考插件、SSH/SFTP 库互通验证。</td><td>两个插件能被统一 Worker 加载，清单与结果协议稳定到可测试版本。</td></tr><tr><td>M1</td><td>Tauri 本机应用、数据库、插件生命周期、任务监督、可视化、报告与安装器。</td><td>本机从导入到报告形成闭环，故障与离线复用测试通过。</td></tr><tr><td>M2</td><td>SSH 控制器、后台任务、SFTP 缓存、幂等与事件恢复、远程取消和结果取回。</td><td>在支持矩阵节点完成断线测试，数据与任务状态一致。</td></tr><tr><td>M3</td><td>选定 GPU 方案、性能校准、打包和完整回归。</td><td>通过产品验收矩阵，发布明确的兼容性记录。</td></tr></tbody></table></div><div class="table-wrap"><table><thead><tr><th scope="col">风险 / 待决事项</th><th scope="col">处理方式</th></tr></thead><tbody><tr><td>Windows SSH 库及 agent 兼容</td><td>M0 实测后锁定库、算法支持和打包依赖。</td></tr><tr><td>Python 原生包与 CUDA 组合</td><td>以运行方案锁定，维护已验证矩阵，检测失败不自动替换其他后端。</td></tr><tr><td>监督进程的登出存活</td><td>能力探测与真实断线测试；记录主机策略限制，选择合适的用户级运行方式。</td></tr><tr><td>YOLO 输出变体</td><td>先固定一种导出约定，其他变体通过新的模型声明/适配扩展。</td></tr><tr><td>权重与样本来源</td><td>确认可分发范围、摘要和参考结果，再纳入验收资产。</td></tr><tr><td>缓存与空间增长</td><td>首版提供空间统计和显式清理；自动配额/保留策略待实测后制定。</td></tr><tr><td>未定性能目标</td><td>建立硬件基线后再给出吞吐和资源预算，当前只规定测量口径。</td></tr></tbody></table></div>
 <p>本文依据当前讨论形成，设计状态为待评审。文档样式来自 <a href="https://github.com/whoarei/skills/tree/f8d312ed5e5f091e80562cf463758787e176d208/rtd-html-docs">rtd-html-docs skill</a>，固定参考提交 <code>f8d312ed5e5f091e80562cf463758787e176d208</code>，便于重建相同文档外壳。</p>
+    </section>
+
+    <section class="section" id="application-updates">
+      <div class="section-head"><span class="section-num">17</span><h2>签名更新与发布流程</h2></div>
+<p>0.2.0 使用 Tauri updater/process 插件，固定 HTTPS 稳定版入口 <code>https://github.com/whoarei/ModelDock/releases/latest/download/latest.json</code>。清单按 windows-x86_64 提供 NSIS URL 与签名，requireSignedVersion=true，内置公钥校验内容与签名绑定版本。更新说明按纯文本显示，不执行远端 HTML。</p><p>前端启动后检查但不自动安装；本机 update_readiness 命令检查全部未终态任务及 preparing/uninstalling 环境，下载前及安装前各检查一次。下载后保留已校验字节供重试；Windows 安装器采用 passive 模式，关闭应用并在完成后重启。</p><p>应用版本升至 0.2.0，SDK/Worker 与参考插件保留 0.1.0 协议版本。SQLite 结构没有变化；用户数据仍由应用用户目录管理。</p><p>v* 标签触发 Linux、Windows 验证与 NSIS 构建。配置 TAURI_SIGNING_PRIVATE_KEY 及密码 Secret 时自动签名并发布；未配置时仅创建草稿安装包，由维护者用同一私钥在本地签名、生成清单后发布。私钥只保存在仓库外的受限文件或 GitHub Secret，不能进入 Git、日志、构建产物或 Release。</p><p>独立升级工作流从草稿 Release 下载候选安装包和签名清单，以临时 0.0.0 客户端通过本机镜像执行实际签名下载、NSIS 安装、自动重启和数据保留检查。测试配置允许的 HTTP 回环地址不进入正式安装包。</p>
     </section>
     <footer class="footer">ModelDock · 技术方案草案 · 2026-11-13<br>单文件 HTML · 支持离线阅读与打印 / 保存 PDF</footer>
   </main>

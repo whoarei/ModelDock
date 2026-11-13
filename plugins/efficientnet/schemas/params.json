@@ -1,0 +1,1 @@
+{"type":"object","additionalProperties":false,"properties":{"top_k":{"type":"integer","title":"Top-K 类别数","minimum":1,"maximum":1000,"default":5}}}

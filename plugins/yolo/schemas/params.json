@@ -1,0 +1,1 @@
+{"type":"object","additionalProperties":false,"properties":{"confidence":{"type":"number","title":"置信度阈值","minimum":0,"maximum":1,"default":0.25},"iou":{"type":"number","title":"NMS IoU 阈值","minimum":0,"maximum":1,"default":0.45},"max_detections":{"type":"integer","title":"最大检测数","minimum":1,"maximum":1000,"default":300,"x-modeldock":{"advanced":true}}}}
