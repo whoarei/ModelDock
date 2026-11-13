@@ -704,10 +704,11 @@
       <a href="#validation"><span>15</span>验证计划与产品验收映射</a>
       <a href="#implementation"><span>16</span>实施顺序、风险与待决事项</a>
       <a href="#application-updates"><span>17</span>签名更新与发布流程</a>
+      <a href="#url-weights"><span>18</span>节点侧 URL 权重下载</a>
     </nav>
     <div class="foot">
       <div class="theme-control" hidden><label for="theme-select">文档配色</label><select id="theme-select"><optgroup label="经典配色"><option value="classic">经典蓝</option><option value="slate">石墨灰</option><option value="forest">森林绿</option></optgroup><optgroup label="亮色配色"><option value="sky">蓝色 · 亮色</option><option value="mint">绿色 · 亮色</option><option value="yellow">黄色 · 亮色</option><option value="pink">粉色 · 亮色</option><option value="apricot" selected>橙色 · 默认</option><option value="lavender">紫色 · 亮色</option></optgroup><optgroup label="深色配色"><option value="dark">深色</option></optgroup></select></div>
-      更新于 2026-11-13<br>版本 0.4<br>单文件 HTML · 支持离线阅读
+      更新于 2026-11-13<br>版本 0.5<br>单文件 HTML · 支持离线阅读
       <button type="button" id="print-button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7zM17 11h.01"/></svg>打印 / 保存 PDF</button>
     </div>
   </aside>
@@ -873,6 +874,11 @@ docs/                            产品、技术、协议与可编辑源数据</
     <section class="section" id="application-updates">
       <div class="section-head"><span class="section-num">17</span><h2>签名更新与发布流程</h2></div>
 <p>0.2.0 使用 Tauri updater/process 插件，固定 HTTPS 稳定版入口 <code>https://github.com/whoarei/ModelDock/releases/latest/download/latest.json</code>。清单按 windows-x86_64 提供 NSIS URL 与签名，requireSignedVersion=true，内置公钥校验内容与签名绑定版本。更新说明按纯文本显示，不执行远端 HTML。</p><p>前端启动后检查但不自动安装；本机 update_readiness 命令检查全部未终态任务及 preparing/uninstalling 环境，下载前及安装前各检查一次。下载后保留已校验字节供重试；Windows 安装器采用 passive 模式，关闭应用并在完成后重启。</p><p>应用版本升至 0.2.0，SDK/Worker 与参考插件保留 0.1.0 协议版本。SQLite 结构没有变化；用户数据仍由应用用户目录管理。</p><p>v* 标签触发 Linux、Windows 验证与 NSIS 构建。配置 TAURI_SIGNING_PRIVATE_KEY 及密码 Secret 时自动签名并发布；未配置时仅创建草稿安装包，由维护者用同一私钥在本地签名、生成清单后发布。私钥只保存在仓库外的受限文件或 GitHub Secret，不能进入 Git、日志、构建产物或 Release。</p><p>独立升级工作流从草稿 Release 下载候选安装包和签名清单，以临时 0.0.0 客户端通过本机镜像执行实际签名下载、NSIS 安装、自动重启和数据保留检查。测试配置允许的 HTTP 回环地址不进入正式安装包。</p>
+    </section>
+
+    <section class="section" id="url-weights">
+      <div class="section-head"><span class="section-num">18</span><h2>节点侧 URL 权重下载</h2></div>
+<p>控制器提供 <code>start_download</code>、<code>download_status</code>、<code>cancel_download</code>，均通过既有节点分发调用。独立下载监督进程在选定节点执行，不占用插件环境；SSH 返回该节点缓存路径，导入时按节点已有文件处理，避免 SFTP 重传。</p><p>状态持久化为 queued / downloading / cancelling / succeeded / failed / cancelled，记录字节进度、可选总长度和完成后的 SHA-256。下载进程有身份和存活检查，意外退出可识别为失败。取消以执行端终态为准；本机下载未结束时阻止应用安装更新。</p><p>使用 Python 标准库流式读取，支持 HTTP/HTTPS 与重定向，禁止 HTTPS 降级。检查响应类型、长度、文件名和插件声明格式；单文件最多 2 GiB、连接及读取超时 30 秒、总时长上限一小时，每节点最多 3 个并行下载。未知总长度显示不确定进度。下载到临时文件，完整性校验通过后才原子归档到 <code>artifacts/&lt;sha256&gt;/&lt;filename&gt;</code>；失败和取消清理临时文件，重试不续传。</p><p>含签名参数的 URL 只写入权限受限的短期请求描述文件，工作进程读取后删除，不写入 SQLite 状态、报告或普通错误。支持系统代理及默认 CA 校验，不跳过证书验证。此流程不改变 Python 插件协议，也不扩大 YOLO/分类适配器支持范围。</p><p>验证覆盖真实 HTTP 服务的重定向、中文文件名、未知长度、超限、截断、取消、SHA-256 不匹配、错误链接，以及 URL → 导入 → ONNX 推理；SSH 集成验证远端缓存归属，Windows 原生验收验证 IPC 下载与加载。</p>
     </section>
     <footer class="footer">ModelDock · 技术方案草案 · 2026-11-13<br>单文件 HTML · 支持离线阅读与打印 / 保存 PDF</footer>
   </main>

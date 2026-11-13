@@ -700,10 +700,11 @@
       <a href="#acceptance"><span>11</span>验收标准</a>
       <a href="#roadmap"><span>12</span>交付阶段与待确认项</a>
       <a href="#application-updates"><span>13</span>应用在线更新与版本发布</a>
+      <a href="#url-weights"><span>14</span>URL 权重导入（下一版本）</a>
     </nav>
     <div class="foot">
       <div class="theme-control" hidden><label for="theme-select">文档配色</label><select id="theme-select"><optgroup label="经典配色"><option value="classic">经典蓝</option><option value="slate">石墨灰</option><option value="forest">森林绿</option></optgroup><optgroup label="亮色配色"><option value="sky">蓝色 · 亮色</option><option value="mint">绿色 · 亮色</option><option value="yellow">黄色 · 亮色</option><option value="pink">粉色 · 亮色</option><option value="apricot" selected>橙色 · 默认</option><option value="lavender">紫色 · 亮色</option></optgroup><optgroup label="深色配色"><option value="dark">深色</option></optgroup></select></div>
-      更新于 2026-11-13<br>版本 0.3<br>单文件 HTML · 支持离线阅读
+      更新于 2026-11-13<br>版本 0.4<br>单文件 HTML · 支持离线阅读
       <button type="button" id="print-button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7zM17 11h.01"/></svg>打印 / 保存 PDF</button>
     </div>
   </aside>
@@ -809,6 +810,11 @@
     <section class="section" id="application-updates">
       <div class="section-head"><span class="section-num">13</span><h2>应用在线更新与版本发布</h2></div>
 <p>0.2.0 在桌面侧栏提供应用更新。启动后检查稳定版并提示新版本；用户可手动检查、查看说明和进度，点击下载并安装后才执行更新。</p><p>下载前及安装前检查本机任务和插件环境操作；仍在使用时提示等待。更新包必须通过内容签名及签名版本校验，失败可重试。程序资源与用户数据分开，更新保留模型、插件环境与测试记录。</p><p>Windows x64 稳定版通过 GitHub Release 分发安装包。0.1.0 试用包没有更新器，需要手动安装一次 0.2.0；后续稳定版可通过应用更新。GPU、视频及标注精度评估仍未开放。</p>
+    </section>
+
+    <section class="section" id="url-weights">
+      <div class="section-head"><span class="section-num">14</span><h2>URL 权重导入（下一版本）</h2></div>
+<p>导入模型提供“本机文件”“URL 下载”两种来源；SSH 节点还可选择远端已有路径。用户选择插件支持模型后粘贴 HTTP/HTTPS 文件直链，可选指定文件名与 SHA-256 校验值。下载显示进度，允许取消与重新下载；关闭导入窗口会请求取消。</p><p>本机下载到本机缓存；SSH 节点由远端直接下载，避免本机下载后再次上传。成功文件经内容摘要归档，失败及取消的临时文件清理，重试从头开始。随后继续配置类别和参数，执行既有加载验证，格式兼容范围以插件声明为准。</p><p>单文件最大 2 GiB，每节点同时最多 3 个下载。只支持文件直链；HTML 分享页和登录页提示更换直链。新功能已在开发分支实现，尚未包含在 0.2.0 已发布安装包中。</p>
     </section>
     <footer class="footer">ModelDock · 产品方案草案 · 2026-11-13<br>单文件 HTML · 支持离线阅读与打印 / 保存 PDF</footer>
   </main>

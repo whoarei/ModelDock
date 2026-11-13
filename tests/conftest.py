@@ -93,3 +93,71 @@ def detector(environment, fixtures):
 def finish(ident):
     wait_for(lambda: store.job(ident), lambda t: t["state"] in store.TERMINAL, timeout=60)
     return api("task_detail", dict(task_id=ident))
+
+
+@pytest.fixture
+def file_server():
+    import threading
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    from modeldock import downloads
+
+    state = dict(payload=b"modeldock weight fixture" * 4096)
+
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            pass
+
+        def do_GET(self):
+            route = self.path.split("?", 1)[0]
+            if route == "/redirect":
+                self.send_response(302)
+                self.send_header("Location", "/model.onnx")
+                self.end_headers()
+                return
+            if route == "/redirect-file":
+                self.send_response(302)
+                self.send_header("Location", "file:///should-not-be-read")
+                self.end_headers()
+                return
+            if route == "/missing":
+                self.send_error(404)
+                return
+            payload = state["payload"]
+            if route == "/slow.onnx":
+                payload = b"s" * 8 * 1024**2
+            self.send_response(200)
+            self.send_header(
+                "Content-Type", "text/html" if route == "/html" else "application/octet-stream"
+            )
+            if route != "/without-length":
+                length = (
+                    downloads.MAX_BYTES + 1
+                    if route == "/huge"
+                    else len(payload) + (100 if route == "/truncated" else 0)
+                )
+                self.send_header("Content-Length", str(length))
+            if route == "/without-length":
+                self.send_header(
+                    "Content-Disposition", "attachment; filename*=UTF-8''%E6%A8%A1%E5%9E%8B.onnx"
+                )
+            if route == "/unsafe-name":
+                self.send_header("Content-Disposition", 'attachment; filename="../escape.onnx"')
+            self.end_headers()
+            if route == "/huge":
+                return
+            try:
+                for offset in range(0, len(payload), 8192):
+                    self.wfile.write(payload[offset : offset + 8192])
+                    self.wfile.flush()
+                    if route == "/slow.onnx":
+                        time.sleep(0.02)
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+                pass
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    yield f"http://127.0.0.1:{server.server_port}", state
+    server.shutdown()
+    server.server_close()
+    thread.join(5)

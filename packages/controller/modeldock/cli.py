@@ -31,8 +31,19 @@ def plugin_metadata():
 
 
 def local(command, args):
+    if command in ("start_download", "download_status", "cancel_download"):
+        from . import downloads
+
+        if command == "start_download":
+            return downloads.start(args)
+        return (
+            downloads.status(args["id"])
+            if command == "download_status"
+            else downloads.cancel(args["id"])
+        )
     if command == "update_readiness":
         from .recovery import reconcile
+        from . import downloads
 
         reconcile()
         active = store.active_jobs()
@@ -41,13 +52,19 @@ def local(command, args):
             for i in store.all_items("installation")
             if i["state"] in ("preparing", "uninstalling")
         ]
+        downloading = downloads.active()
         return dict(
-            ready=not active and not preparing,
+            ready=not active and not preparing and not downloading,
             reason="请先完成或取消本机测试任务，再安装应用更新"
             if active
-            else ("请等待本机插件环境准备或卸载完成，再安装应用更新" if preparing else ""),
+            else (
+                "请等待本机插件环境准备或卸载完成，再安装应用更新"
+                if preparing
+                else ("请等待本机权重下载完成或取消下载，再安装应用更新" if downloading else "")
+            ),
             active_tasks=len(active),
             preparing_environments=len(preparing),
+            active_downloads=len(downloading),
         )
     if command == "probe":
         import subprocess
@@ -222,10 +239,15 @@ def api(command, args):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", choices=["api", "prepare", "supervise", "serve"])
+    parser.add_argument("action", choices=["api", "prepare", "supervise", "serve", "download"])
     parser.add_argument("value", nargs="?")
     parser.add_argument("--port", type=int, default=4317)
     args = parser.parse_args()
+    if args.action == "download":
+        from .downloads import run
+
+        run(args.value)
+        return
     if args.action == "prepare":
         plugins.prepare(args.value)
         return

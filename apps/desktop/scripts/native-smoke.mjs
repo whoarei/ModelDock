@@ -3,6 +3,8 @@ import { spawn, execFileSync } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
 import assert from "node:assert/strict";
+import http from "node:http";
+import { createHash } from "node:crypto";
 
 const root = path.resolve(import.meta.dirname, "../../..");
 const { version } = JSON.parse(
@@ -31,6 +33,19 @@ execFileSync("uv", ["python", "install", "3.12.14"], {
 const binary =
   process.env.MODELDOCK_NATIVE_BINARY ||
   path.join(root, "apps/desktop/src-tauri/target/release/modeldock.exe");
+const weightBytes = await fs.readFile(
+  path.join(fixtures, "color-classifier.onnx"),
+);
+const weightHash = createHash("sha256").update(weightBytes).digest("hex");
+const weightServer = http.createServer((_request, response) => {
+  response.writeHead(200, {
+    "Content-Type": "application/octet-stream",
+    "Content-Length": weightBytes.length,
+  });
+  response.end(weightBytes);
+});
+await new Promise((resolve) => weightServer.listen(0, "127.0.0.1", resolve));
+const weightURL = `http://127.0.0.1:${weightServer.address().port}/model.onnx`;
 const app = spawn(binary, [], {
   env: {
     ...process.env,
@@ -117,11 +132,34 @@ try {
       {},
     ],
   ]) {
+    let weightPath = path.join(fixtures, weight);
+    if (plugin === "efficientnet") {
+      let download = await api("start_download", {
+        plugin_id: plugin,
+        model_id: model,
+        url: weightURL,
+        filename: "网址分类.onnx",
+        sha256: weightHash,
+      });
+      const stop = Date.now() + 60000;
+      while (
+        !["succeeded", "failed", "cancelled"].includes(download.state) &&
+        Date.now() < stop
+      ) {
+        await new Promise((r) => setTimeout(r, 300));
+        download = await api("download_status", { id: download.id });
+      }
+      assert.equal(download.state, "succeeded", JSON.stringify(download));
+      assert.equal(download.sha256, weightHash);
+      assert.equal(download.verified, true);
+      assert.deepEqual(await fs.readFile(download.path), weightBytes);
+      weightPath = download.path;
+    }
     const instance = await api("create_model", {
       plugin_id: plugin,
       model_id: model,
       name,
-      weight_path: path.join(fixtures, weight),
+      weight_path: weightPath,
       labels_path: path.join(fixtures, labels),
       parameters,
     });
@@ -191,6 +229,7 @@ try {
           "Tauri IPC",
           "managed Python",
           "isolated uv environments",
+          "URL weights and SHA-256 verification",
           "classification",
           "detection and NMS",
           "preview",
@@ -224,4 +263,5 @@ try {
 } finally {
   if (browser) await browser.close().catch(() => {});
   app.kill();
+  await new Promise((resolve) => weightServer.close(resolve));
 }

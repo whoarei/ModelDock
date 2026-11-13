@@ -13,7 +13,7 @@ from conftest import wait_for
     sys.platform != "linux" or not shutil.which("ssh-keyscan"),
     reason="Linux loopback SSH integration",
 )
-def test_ssh_deploy_upload_and_disconnected_task(environment, fixtures, tmp_path):
+def test_ssh_deploy_upload_and_disconnected_task(environment, fixtures, tmp_path, file_server):
     loop = asyncio.new_event_loop()
     thread = threading.Thread(target=loop.run_forever, daemon=True)
     thread.start()
@@ -93,6 +93,42 @@ def test_ssh_deploy_upload_and_disconnected_task(environment, fixtures, tmp_path
             ),
         )
         assert model["state"] == "ready", model
+        # URL downloads execute on the node and their cached path is imported
+        # directly, without the local-file SFTP upload route.
+        from pathlib import Path
+        import hashlib
+
+        base_url, files = file_server
+        files["payload"] = (fixtures / "color-classifier.onnx").read_bytes()
+        downloading = api(
+            "start_download",
+            dict(
+                node_id=node["id"],
+                plugin_id="efficientnet",
+                model_id="efficientnet_b0",
+                url=base_url + "/model.onnx",
+                sha256=hashlib.sha256(files["payload"]).hexdigest(),
+            ),
+        )
+        downloaded = wait_for(
+            lambda: api("download_status", dict(node_id=node["id"], id=downloading["id"])),
+            lambda d: d["state"] in {"succeeded", "failed", "cancelled"},
+        )
+        assert downloaded["state"] == "succeeded", downloaded
+        assert Path(downloaded["path"]).is_relative_to(tmp_path / "remote-node")
+        assert not Path(downloaded["path"]).is_relative_to(environment)
+        imported = api(
+            "create_model",
+            dict(
+                node_id=node["id"],
+                source="remote",
+                plugin_id="efficientnet",
+                model_id="efficientnet_b0",
+                weight_path=downloaded["path"],
+                parameters={"top_k": 2},
+            ),
+        )
+        assert imported["state"] == "ready", imported
         job = api(
             "start_task",
             dict(
