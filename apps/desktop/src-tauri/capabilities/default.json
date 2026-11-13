@@ -1,6 +1,13 @@
 {
   "identifier": "main-capability",
   "description": "Main window dialogs and core IPC",
-  "windows": ["main"],
-  "permissions": ["core:default", "dialog:default"]
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "dialog:default",
+    "updater:default",
+    "process:allow-restart"
+  ]
 }

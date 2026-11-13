@@ -5,6 +5,9 @@ import path from "node:path";
 import assert from "node:assert/strict";
 
 const root = path.resolve(import.meta.dirname, "../../..");
+const { version } = JSON.parse(
+  await fs.readFile(path.join(root, "apps/desktop/package.json"), "utf8"),
+);
 const data = path.join(root, "test-results/native-runtime");
 const fixtures = path.join(root, "test-results/native-fixtures");
 const output = path.join(root, "test-results/native-ui");
@@ -79,7 +82,7 @@ try {
     return response.data;
   }
   let state = await api("state");
-  assert.equal(state.version, "0.1.0");
+  assert.equal(state.version, version);
   for (const name of ["efficientnet", "yolo"]) {
     await api("install_plugin", { plugin_id: name, profile_id: "onnx-cpu" });
     const stop = Date.now() + 240000;
@@ -182,7 +185,7 @@ try {
       {
         passed: true,
         native: true,
-        version: "0.1.0",
+        version,
         checks: [
           "Windows WebView2",
           "Tauri IPC",

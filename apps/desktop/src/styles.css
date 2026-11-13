@@ -11,6 +11,44 @@
   --line: #e5eaee;
   --sidebar: #151e28;
 }
+.update-entry {
+  position: relative;
+}
+.update-dot {
+  width: 7px;
+  height: 7px;
+  background: #58ddcf;
+  border-radius: 50%;
+  margin-left: auto;
+}
+.update-state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 0;
+  font-size: 16px;
+  color: var(--accent-dark);
+}
+.update-notes {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 260px;
+  overflow: auto;
+  background: #f5f7f9;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  line-height: 1.7;
+}
+.update-modal progress {
+  width: 100%;
+  accent-color: var(--accent);
+  margin: 18px 0 10px;
+}
+.update-modal .help-note {
+  margin-top: 20px;
+}
 * {
   box-sizing: border-box;
 }

@@ -4,7 +4,7 @@ import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlsplit
 
-from . import store
+from . import __version__, store
 from .cli import api
 
 
@@ -72,7 +72,7 @@ class Handler(BaseHTTPRequestHandler):
             )
 
     def do_GET(self):
-        self.send(200, dict(version="0.1.0", mode="development bridge"))
+        self.send(200, dict(version=__version__, mode="development bridge"))
 
 
 def serve(port):

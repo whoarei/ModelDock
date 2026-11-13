@@ -1,0 +1,54 @@
+name: Verify signed application upgrade
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Draft or published release to verify
+        required: true
+        default: v0.2.0
+permissions:
+  contents: read
+jobs:
+  upgrade:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.13.6'
+          python-version: '3.12.14'
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+          cache-on-failure: true
+      - name: Download signed candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: gh release download $env:RELEASE_TAG --dir .cache/signed-release --pattern '*-setup.exe' --pattern latest.json
+      - run: uv run python scripts/prepare_resources.py --rust-licenses
+      - run: npm ci
+        working-directory: apps/desktop
+      - name: Build an older test client
+        working-directory: apps/desktop
+        run: |
+          $destination = Join-Path $env:GITHUB_WORKSPACE 'test-results\upgrade-install\ModelDock'
+          $config = @{version='0.0.0'; bundle=@{createUpdaterArtifacts=$false}; plugins=@{updater=@{endpoints=@('http://127.0.0.1:9411/latest.json'); dangerousInsecureTransportProtocol=$true; windows=@{installerArgs=@("/D=$destination")}}}}
+          $config | ConvertTo-Json -Depth 10 | Set-Content -Encoding utf8 upgrade-test.json
+          npm run tauri -- build --no-bundle --ci --config upgrade-test.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - run: node scripts/updater-smoke.mjs
+        working-directory: apps/desktop
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: signed-upgrade-test-results
+          path: test-results/upgrade-ui

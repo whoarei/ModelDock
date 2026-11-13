@@ -197,6 +197,8 @@ async fn write_file(path: String, bytes: Vec<u8>) -> Result<(), String> {
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .manage(Runtime::default())
         .invoke_handler(tauri::generate_handler![api, write_file])
         .setup(|app| {
@@ -204,6 +206,7 @@ fn main() {
             let builder = tauri::WebviewWindowBuilder::from_config(app, config)?;
             #[cfg(windows)]
             let builder = if std::env::var("MODELDOCK_WEBVIEW_DEBUG_PORT").as_deref() == Ok("9222")
+                || std::env::args().any(|arg| arg == "--inspect-webview=9222")
             {
                 builder
                     .devtools(true)

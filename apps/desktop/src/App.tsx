@@ -32,6 +32,8 @@ import {
 import { api, pickFiles, exportTask } from "./api";
 import { Performance, number } from "./charts";
 import Viewer from "./Viewer";
+import AppUpdates from "./AppUpdates";
+import { APP_VERSION } from "./updater";
 import type {
   Params,
   Plugin,
@@ -563,9 +565,10 @@ export default function App() {
             本机与远程使用同一协议
           </p>
         </div>
+        <AppUpdates appBusy={!!busy} onBusyChange={setBusy} />
         <button className="sidebar-help" onClick={() => setModal("help")}>
           <HelpCircle size={17} />
-          使用说明<small>v0.1.0</small>
+          使用说明<small>v{APP_VERSION}</small>
         </button>
       </aside>
       <div className="main-shell">
@@ -1723,7 +1726,7 @@ export default function App() {
             </section>
           )}
           <footer className="app-footer">
-            <span>ModelDock 0.1.0</span>
+            <span>ModelDock {APP_VERSION}</span>
             <span>
               <i className="status-dot" />
               {nodeId === "local" ? "本机执行" : "SSH 加密连接"} ·
@@ -2209,7 +2212,7 @@ export default function App() {
                   </div>
                 </div>
                 <div className="help-note">
-                  0.1.0 使用
+                  当前参考插件使用
                   CPU、batch=1。GPU、视频和带标注的精度评估尚未开放。SSH
                   节点需要已启用的 OpenSSH 客户端。
                 </div>

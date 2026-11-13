@@ -4,7 +4,7 @@
   "subtitle": "Tauri / Python 插件 / uv / SSH 执行",
   "documentId": "modeldock-technical-plan",
   "updated": "2026-11-13",
-  "version": "0.3 系统设计",
+  "version": "0.4",
   "eyebrow": "系统设计 / 接口草案 / 待实现与验证",
   "introHtml": "<p class=\"lead\">以节点为执行边界，以插件为部署和环境维护单元。统一 Python 接入协议，将本机和 SSH 执行封装在同一任务模型下。</p><div class=\"callout\"><strong>本文同时标明整体设计和 0.1.0 的实现选择。</strong>Rust 提供桌面系统能力和受控进程桥，本机与远端共享 Python 控制器。插件字段与 API 以独立的 <a href=\"python-plugin-protocol.html\">Python 插件协议</a> 为准，产品范围见 <a href=\"product-plan.html\">产品方案</a>。</div>",
   "footer": "ModelDock · 技术方案草案 · 2026-11-13",
@@ -88,6 +88,11 @@
       "id": "implementation",
       "title": "实施顺序、风险与待决事项",
       "html": "<div class=\"table-wrap\"><table><thead><tr><th scope=\"col\">阶段</th><th scope=\"col\">技术交付</th><th scope=\"col\">退出条件</th></tr></thead><tbody><tr><td>M0</td><td>协议草案落地、SDK PoC、uv CPU 环境、参考插件、SSH/SFTP 库互通验证。</td><td>两个插件能被统一 Worker 加载，清单与结果协议稳定到可测试版本。</td></tr><tr><td>M1</td><td>Tauri 本机应用、数据库、插件生命周期、任务监督、可视化、报告与安装器。</td><td>本机从导入到报告形成闭环，故障与离线复用测试通过。</td></tr><tr><td>M2</td><td>SSH 控制器、后台任务、SFTP 缓存、幂等与事件恢复、远程取消和结果取回。</td><td>在支持矩阵节点完成断线测试，数据与任务状态一致。</td></tr><tr><td>M3</td><td>选定 GPU 方案、性能校准、打包和完整回归。</td><td>通过产品验收矩阵，发布明确的兼容性记录。</td></tr></tbody></table></div><div class=\"table-wrap\"><table><thead><tr><th scope=\"col\">风险 / 待决事项</th><th scope=\"col\">处理方式</th></tr></thead><tbody><tr><td>Windows SSH 库及 agent 兼容</td><td>M0 实测后锁定库、算法支持和打包依赖。</td></tr><tr><td>Python 原生包与 CUDA 组合</td><td>以运行方案锁定，维护已验证矩阵，检测失败不自动替换其他后端。</td></tr><tr><td>监督进程的登出存活</td><td>能力探测与真实断线测试；记录主机策略限制，选择合适的用户级运行方式。</td></tr><tr><td>YOLO 输出变体</td><td>先固定一种导出约定，其他变体通过新的模型声明/适配扩展。</td></tr><tr><td>权重与样本来源</td><td>确认可分发范围、摘要和参考结果，再纳入验收资产。</td></tr><tr><td>缓存与空间增长</td><td>首版提供空间统计和显式清理；自动配额/保留策略待实测后制定。</td></tr><tr><td>未定性能目标</td><td>建立硬件基线后再给出吞吐和资源预算，当前只规定测量口径。</td></tr></tbody></table></div>\n<p>本文依据当前讨论形成，设计状态为待评审。文档样式来自 <a href=\"https://github.com/whoarei/skills/tree/f8d312ed5e5f091e80562cf463758787e176d208/rtd-html-docs\">rtd-html-docs skill</a>，固定参考提交 <code>f8d312ed5e5f091e80562cf463758787e176d208</code>，便于重建相同文档外壳。</p>"
+    },
+    {
+      "id": "application-updates",
+      "title": "签名更新与发布流程",
+      "html": "<p>0.2.0 使用 Tauri updater/process 插件，固定 HTTPS 稳定版入口 <code>https://github.com/whoarei/ModelDock/releases/latest/download/latest.json</code>。清单按 windows-x86_64 提供 NSIS URL 与签名，requireSignedVersion=true，内置公钥校验内容与签名绑定版本。更新说明按纯文本显示，不执行远端 HTML。</p><p>前端启动后检查但不自动安装；本机 update_readiness 命令检查全部未终态任务及 preparing/uninstalling 环境，下载前及安装前各检查一次。下载后保留已校验字节供重试；Windows 安装器采用 passive 模式，关闭应用并在完成后重启。</p><p>应用版本升至 0.2.0，SDK/Worker 与参考插件保留 0.1.0 协议版本。SQLite 结构没有变化；用户数据仍由应用用户目录管理。</p><p>v* 标签触发 Linux、Windows 验证与 NSIS 构建。配置 TAURI_SIGNING_PRIVATE_KEY 及密码 Secret 时自动签名并发布；未配置时仅创建草稿安装包，由维护者用同一私钥在本地签名、生成清单后发布。私钥只保存在仓库外的受限文件或 GitHub Secret，不能进入 Git、日志、构建产物或 Release。</p><p>独立升级工作流从草稿 Release 下载候选安装包和签名清单，以临时 0.0.0 客户端通过本机镜像执行实际签名下载、NSIS 安装、自动重启和数据保留检查。测试配置允许的 HTTP 回环地址不进入正式安装包。</p>"
     }
   ]
 }

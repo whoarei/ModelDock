@@ -6,7 +6,7 @@ import platform
 import sys
 from pathlib import Path
 
-from . import plugins, store, tasks
+from . import __version__, plugins, store, tasks
 
 
 def initialize():
@@ -31,6 +31,24 @@ def plugin_metadata():
 
 
 def local(command, args):
+    if command == "update_readiness":
+        from .recovery import reconcile
+
+        reconcile()
+        active = store.active_jobs()
+        preparing = [
+            i
+            for i in store.all_items("installation")
+            if i["state"] in ("preparing", "uninstalling")
+        ]
+        return dict(
+            ready=not active and not preparing,
+            reason="请先完成或取消本机测试任务，再安装应用更新"
+            if active
+            else ("请等待本机插件环境准备或卸载完成，再安装应用更新" if preparing else ""),
+            active_tasks=len(active),
+            preparing_environments=len(preparing),
+        )
     if command == "probe":
         import subprocess
 
@@ -121,7 +139,7 @@ def local(command, args):
             installations=installs,
             models=store.all_items("model"),
             tasks=store.jobs(),
-            version="0.1.0",
+            version=__version__,
         )
     if command == "import_plugin":
         return plugins.register(args["path"])

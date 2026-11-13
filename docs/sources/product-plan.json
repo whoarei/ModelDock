@@ -4,7 +4,7 @@
   "subtitle": "插件化本地与远程模型测试平台",
   "documentId": "modeldock-product-plan",
   "updated": "2026-11-13",
-  "version": "0.2 方案与实现范围",
+  "version": "0.3",
   "eyebrow": "产品规划 / Windows 桌面端 / 待评审",
   "introHtml": "<p class=\"lead\">让模型开发者用 Python 接入模型，让测试人员在同一个 Windows 应用中完成本机或 SSH 远程推理、结果查看与性能比较。</p><div class=\"callout\"><strong>本文描述产品目标与分阶段规划。</strong>0.1.0 已加入开发实现；安装包和原生验收状态以仓库 CI 为准，正式发布与人工验收独立。技术细节见 <a href=\"technical-plan.html\">技术方案</a>，插件作者参考 <a href=\"python-plugin-protocol.html\">Python 插件协议</a>。</div>",
   "footer": "ModelDock · 产品方案草案 · 2026-11-13",
@@ -68,6 +68,11 @@
       "id": "roadmap",
       "title": "交付阶段与待确认项",
       "html": "<div class=\"table-wrap\"><table><thead><tr><th scope=\"col\">阶段</th><th scope=\"col\">交付内容</th><th scope=\"col\">进入下一阶段的条件</th></tr></thead><tbody><tr><td>M0：协议与接入验证</td><td>插件清单、SDK、两种结果协议及 uv 环境验证。</td><td>两个参考插件能被相同运行器加载，依赖可重建。</td></tr><tr><td>M1：本机测试闭环</td><td>Windows 应用、插件与模型管理、单图/批量/性能、历史与导出。</td><td>通过 P-01 至 P-07、P-10 至 P-12 的本机部分。</td></tr><tr><td>M2：远程节点闭环</td><td>SSH 部署、数据关联与传输、后台任务、重连与结果取回。</td><td>通过 P-08、P-09 及远程停止、失败恢复检查。</td></tr><tr><td>M3：首个完整版本</td><td>稳定性、选定 GPU 方案、安装包与使用说明。</td><td>完整验收矩阵通过，已知限制被记录。</td></tr><tr><td>后续迭代</td><td>标注评估、视频输入、更多任务、完整离线包与插件分发。</td><td>按实际使用需求确定顺序。</td></tr></tbody></table></div>\n<p>实施前仍需确定：参考权重与样本的可分发来源、最终 YOLO 输出约定、首批 GPU/驱动组合、SSH 认证实现与受支持 Linux 版本，以及结果保留和缓存清理策略。这些不改变既定的插件归属与节点执行模型。</p>\n<p>文档样式采用用户提供的 <a href=\"https://github.com/whoarei/skills/tree/f8d312ed5e5f091e80562cf463758787e176d208/rtd-html-docs\">rtd-html-docs skill</a>。页面包含全部样式、脚本和图表；外部链接仅作来源引用。</p>"
+    },
+    {
+      "id": "application-updates",
+      "title": "应用在线更新与版本发布",
+      "html": "<p>0.2.0 在桌面侧栏提供应用更新。启动后检查稳定版并提示新版本；用户可手动检查、查看说明和进度，点击下载并安装后才执行更新。</p><p>下载前及安装前检查本机任务和插件环境操作；仍在使用时提示等待。更新包必须通过内容签名及签名版本校验，失败可重试。程序资源与用户数据分开，更新保留模型、插件环境与测试记录。</p><p>Windows x64 稳定版通过 GitHub Release 分发安装包。0.1.0 试用包没有更新器，需要手动安装一次 0.2.0；后续稳定版可通过应用更新。GPU、视频及标注精度评估仍未开放。</p>"
     }
   ]
 }

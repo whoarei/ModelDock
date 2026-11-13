@@ -32,7 +32,9 @@ def test_dev_bridge_origin_and_request_validation(environment):
             headers={"Content-Type": "application/json", "Origin": "http://127.0.0.1:1420"},
         )
         with urlopen(request) as response:
-            assert json.load(response)["data"]["version"] == "0.1.0"
+            from modeldock import __version__
+
+            assert json.load(response)["data"]["version"] == __version__
     finally:
         server.shutdown()
         server.server_close()
