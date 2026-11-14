@@ -1,0 +1,38 @@
+{
+  "timm_name": "vit_small_patch16_224.augreg_in21k_ft_in1k",
+  "pretrained_cfg": {
+    "url": "https://storage.googleapis.com/vit_models/augreg/S_16-i21k-300ep-lr_0.001-aug_light1-wd_0.03-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.03-res_224.npz",
+    "hf_hub_id": "timm/vit_small_patch16_224.augreg_in21k_ft_in1k",
+    "architecture": "vit_small_patch16_224",
+    "tag": "augreg_in21k_ft_in1k",
+    "custom_load": true,
+    "input_size": [
+      3,
+      224,
+      224
+    ],
+    "fixed_input_size": true,
+    "interpolation": "bicubic",
+    "crop_pct": 0.9,
+    "crop_mode": "center",
+    "mean": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "std": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "num_classes": 1000,
+    "pool_size": null,
+    "first_conv": "patch_embed.proj",
+    "classifier": "head",
+    "license": "apache-2.0"
+  },
+  "input_size": [
+    224,
+    224
+  ]
+}

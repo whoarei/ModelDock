@@ -2490,3 +2490,16 @@ td {
 th {
   font-size: 10px;
 }
+
+.catalog-fields {
+  grid-template-columns: 1fr;
+}
+.model-chooser {
+  min-width: 0;
+}
+.model-chooser .model-search {
+  margin-bottom: 16px;
+}
+.model-chooser select {
+  width: 100%;
+}

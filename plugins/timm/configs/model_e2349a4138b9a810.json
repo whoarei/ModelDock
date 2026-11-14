@@ -1,0 +1,48 @@
+{
+  "timm_name": "resnet34d.ra2_in1k",
+  "pretrained_cfg": {
+    "url": "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/resnet34d_ra2-f8dcfcaf.pth",
+    "hf_hub_id": "timm/resnet34d.ra2_in1k",
+    "architecture": "resnet34d",
+    "tag": "ra2_in1k",
+    "custom_load": false,
+    "input_size": [
+      3,
+      224,
+      224
+    ],
+    "test_input_size": [
+      3,
+      288,
+      288
+    ],
+    "fixed_input_size": false,
+    "interpolation": "bicubic",
+    "crop_pct": 0.875,
+    "test_crop_pct": 0.95,
+    "crop_mode": "center",
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "num_classes": 1000,
+    "pool_size": [
+      7,
+      7
+    ],
+    "first_conv": "conv1.0",
+    "classifier": "fc",
+    "license": "apache-2.0",
+    "origin_url": "https://github.com/huggingface/pytorch-image-models"
+  },
+  "input_size": [
+    224,
+    224
+  ]
+}

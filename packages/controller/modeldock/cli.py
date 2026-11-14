@@ -10,7 +10,7 @@ from . import __version__, plugins, store, tasks
 
 
 def initialize():
-    for name in ("efficientnet", "yolo"):
+    for name in ("efficientnet", "yolo", "timm"):
         directory = store.resources() / "plugins" / name
         if not store.get("plugin", name) and (directory / "manifest.json").is_file():
             plugins.register(directory)
@@ -19,14 +19,17 @@ def initialize():
 def plugin_metadata():
     values = store.all_items("plugin")
     for plugin in values:
+        files = {}
         for model in plugin["manifest"]["models"]:
             for source, dest in (
                 ("parameter_schema", "parameter_schema_data"),
                 ("config", "config_data"),
             ):
-                model[dest] = json.loads(
-                    (Path(plugin["path"]) / model[source]).read_text(encoding="utf-8-sig")
-                )
+                if model[source] not in files:
+                    files[model[source]] = json.loads(
+                        (Path(plugin["path"]) / model[source]).read_text(encoding="utf-8-sig")
+                    )
+                model[dest] = files[model[source]]
     return values
 
 

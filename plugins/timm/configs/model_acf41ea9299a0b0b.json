@@ -1,0 +1,41 @@
+{
+  "timm_name": "tf_efficientnet_b4.in1k",
+  "pretrained_cfg": {
+    "url": "https://github.com/huggingface/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b4-74ee3bed.pth",
+    "hf_hub_id": "timm/tf_efficientnet_b4.in1k",
+    "architecture": "tf_efficientnet_b4",
+    "tag": "in1k",
+    "custom_load": false,
+    "input_size": [
+      3,
+      380,
+      380
+    ],
+    "fixed_input_size": false,
+    "interpolation": "bicubic",
+    "crop_pct": 0.922,
+    "crop_mode": "center",
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "num_classes": 1000,
+    "pool_size": [
+      12,
+      12
+    ],
+    "first_conv": "conv_stem",
+    "classifier": "classifier",
+    "license": "apache-2.0"
+  },
+  "input_size": [
+    380,
+    380
+  ]
+}

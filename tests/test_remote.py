@@ -13,7 +13,9 @@ from conftest import wait_for
     sys.platform != "linux" or not shutil.which("ssh-keyscan"),
     reason="Linux loopback SSH integration",
 )
-def test_ssh_deploy_upload_and_disconnected_task(environment, fixtures, tmp_path, file_server):
+def test_ssh_deploy_upload_and_disconnected_task(
+    environment, fixtures, tmp_path, file_server, timm_runtime
+):
     loop = asyncio.new_event_loop()
     thread = threading.Thread(target=loop.run_forever, daemon=True)
     thread.start()
@@ -129,6 +131,54 @@ def test_ssh_deploy_upload_and_disconnected_task(environment, fixtures, tmp_path
             ),
         )
         assert imported["state"] == "ready", imported
+        api("install_plugin", dict(node_id=node["id"], plugin_id="timm", profile_id="torch-cpu"))
+        remote_timm = wait_for(
+            lambda: next(
+                i
+                for i in api("state", dict(node_id=node["id"]))["installations"]
+                if i["id"] == "timm"
+            ),
+            lambda i: i["state"] != "preparing",
+            timeout=900,
+        )
+        assert remote_timm["state"] == "ready", remote_timm
+        timm_catalog = next(p for p in api("state", {})["plugins"] if p["id"] == "timm")
+        timm_spec = next(
+            m
+            for m in timm_catalog["manifest"]["models"]
+            if m["name"] == "mobilenetv3_small_050.lamb_in1k"
+        )
+        _, timm_files = timm_runtime
+        timm_model = api(
+            "create_model",
+            dict(
+                node_id=node["id"],
+                source="local",
+                plugin_id="timm",
+                model_id=timm_spec["id"],
+                weight_path=str(timm_files / "timm-classifier.safetensors"),
+                labels_path=str(timm_files / "timm-labels.txt"),
+                parameters=dict(num_classes=3, top_k=2),
+            ),
+        )
+        assert timm_model["state"] == "ready", timm_model
+        timm_task = api(
+            "start_task",
+            dict(
+                node_id=node["id"],
+                source="local",
+                model_instance_id=timm_model["id"],
+                paths=[str(fixtures / "red.png")],
+                mode="single",
+            ),
+        )
+        timm_result = wait_for(
+            lambda: api("task_detail", dict(node_id=node["id"], task_id=timm_task["id"])),
+            lambda t: t["state"] in {"SUCCEEDED", "FAILED", "CANCELLED", "PARTIAL_FAILED"},
+            timeout=120,
+        )
+        assert timm_result["state"] == "SUCCEEDED", timm_result
+        assert timm_result["results"][0]["prediction"]["top_k"][0]["label"] == "green"
         job = api(
             "start_task",
             dict(

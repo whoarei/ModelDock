@@ -1,0 +1,38 @@
+{
+  "timm_name": "vit_tiny_r_s16_p8_384.augreg_in21k_ft_in1k",
+  "pretrained_cfg": {
+    "url": "https://storage.googleapis.com/vit_models/augreg/R_Ti_16-i21k-300ep-lr_0.001-aug_none-wd_0.03-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.03-res_384.npz",
+    "hf_hub_id": "timm/vit_tiny_r_s16_p8_384.augreg_in21k_ft_in1k",
+    "architecture": "vit_tiny_r_s16_p8_384",
+    "tag": "augreg_in21k_ft_in1k",
+    "custom_load": true,
+    "input_size": [
+      3,
+      384,
+      384
+    ],
+    "fixed_input_size": true,
+    "interpolation": "bicubic",
+    "crop_pct": 1.0,
+    "crop_mode": "center",
+    "mean": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "std": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "num_classes": 1000,
+    "pool_size": null,
+    "first_conv": "patch_embed.backbone.conv",
+    "classifier": "head",
+    "license": "apache-2.0"
+  },
+  "input_size": [
+    384,
+    384
+  ]
+}

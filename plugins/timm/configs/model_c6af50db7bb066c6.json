@@ -1,0 +1,41 @@
+{
+  "timm_name": "swin_tiny_patch4_window7_224.ms_in1k",
+  "pretrained_cfg": {
+    "url": "https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth",
+    "hf_hub_id": "timm/swin_tiny_patch4_window7_224.ms_in1k",
+    "architecture": "swin_tiny_patch4_window7_224",
+    "tag": "ms_in1k",
+    "custom_load": false,
+    "input_size": [
+      3,
+      224,
+      224
+    ],
+    "fixed_input_size": true,
+    "interpolation": "bicubic",
+    "crop_pct": 0.9,
+    "crop_mode": "center",
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "num_classes": 1000,
+    "pool_size": [
+      7,
+      7
+    ],
+    "first_conv": "patch_embed.proj",
+    "classifier": "head.fc",
+    "license": "mit"
+  },
+  "input_size": [
+    224,
+    224
+  ]
+}

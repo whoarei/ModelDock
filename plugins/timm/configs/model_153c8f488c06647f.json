@@ -1,0 +1,46 @@
+{
+  "timm_name": "resnetrs152.tf_in1k",
+  "pretrained_cfg": {
+    "url": "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-rs-weights/resnetrs152_i256_ema-a9aff7f9.pth",
+    "hf_hub_id": "timm/resnetrs152.tf_in1k",
+    "architecture": "resnetrs152",
+    "tag": "tf_in1k",
+    "custom_load": false,
+    "input_size": [
+      3,
+      256,
+      256
+    ],
+    "test_input_size": [
+      3,
+      320,
+      320
+    ],
+    "fixed_input_size": false,
+    "interpolation": "bicubic",
+    "crop_pct": 1.0,
+    "crop_mode": "center",
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "num_classes": 1000,
+    "pool_size": [
+      8,
+      8
+    ],
+    "first_conv": "conv1.0",
+    "classifier": "fc",
+    "license": "apache-2.0"
+  },
+  "input_size": [
+    256,
+    256
+  ]
+}

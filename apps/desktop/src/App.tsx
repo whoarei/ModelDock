@@ -34,6 +34,7 @@ import { Performance, number } from "./charts";
 import Viewer from "./Viewer";
 import AppUpdates from "./AppUpdates";
 import WeightDownload from "./WeightDownload";
+import ModelChooser from "./ModelChooser";
 import { APP_VERSION } from "./updater";
 import type {
   Params,
@@ -140,10 +141,12 @@ function ParamsFields({
   spec,
   value,
   onChange,
+  disabledKeys = [],
 }: {
   spec: ModelSpec | undefined;
   value: Params;
   onChange: (p: Params) => void;
+  disabledKeys?: string[];
 }) {
   return (
     <>
@@ -153,6 +156,7 @@ function ParamsFields({
             <span>{field.title || key}</span>
             {field.enum ? (
               <select
+                disabled={disabledKeys.includes(key)}
                 value={String(value[key] ?? field.default ?? "")}
                 onChange={(e) =>
                   onChange({
@@ -171,6 +175,7 @@ function ParamsFields({
               </select>
             ) : field.type === "boolean" ? (
               <input
+                disabled={disabledKeys.includes(key)}
                 type="checkbox"
                 checked={Boolean(value[key] ?? field.default)}
                 onChange={(e) =>
@@ -179,6 +184,7 @@ function ParamsFields({
               />
             ) : field.type === "object" ? (
               <textarea
+                disabled={disabledKeys.includes(key)}
                 defaultValue={JSON.stringify(value[key] ?? field.default ?? {})}
                 onBlur={(e) => {
                   try {
@@ -190,6 +196,7 @@ function ParamsFields({
               />
             ) : (
               <input
+                disabled={disabledKeys.includes(key)}
                 type={
                   ["number", "integer"].includes(field.type) ? "number" : "text"
                 }
@@ -396,12 +403,15 @@ export default function App() {
     [];
   const engineName = providers.some((p) => p.endsWith("ExecutionProvider"))
     ? "ONNX Runtime"
-    : currentModel
-      ? "Python 插件"
-      : "待选择模型";
+    : providers.includes("PyTorchCPU")
+      ? "PyTorch"
+      : currentModel
+        ? "Python 插件"
+        : "待选择模型";
   const deviceName = providers.includes("CUDAExecutionProvider")
     ? "CUDA"
-    : providers.includes("CPUExecutionProvider")
+    : providers.includes("CPUExecutionProvider") ||
+        providers.includes("PyTorchCPU")
       ? "CPU"
       : currentModel
         ? "插件设备"
@@ -470,7 +480,9 @@ export default function App() {
         weight_path: weight,
         labels_path: labels,
         parameters: modelParams,
-        source: modelSource === "url" ? "remote" : modelSource,
+        source: ["url", "pretrained"].includes(modelSource)
+          ? "remote"
+          : modelSource,
       });
       if (value.state !== "ready")
         throw new Error(value.error || "模型验证失败");
@@ -523,7 +535,9 @@ export default function App() {
     });
   }
   function setPlugin(id: string) {
-    if (modelSource === "url") setWeight("");
+    setWeight("");
+    setLabels("");
+    setModelSource("local");
     setModelPlugin(id);
     const p = plugins.find((p) => p.id === id);
     if (p) {
@@ -1345,7 +1359,7 @@ export default function App() {
                 <section className="panel">
                   <Empty
                     title="添加你的第一个模型"
-                    description="先准备插件运行环境，再导入与支持模型匹配的 ONNX 权重。"
+                    description="先准备插件运行环境，再导入与支持模型匹配的权重。"
                     action={
                       <button className="button primary" onClick={openModel}>
                         <Plus size={16} />
@@ -1396,9 +1410,15 @@ export default function App() {
                       </div>
                       <div className="supported-label">支持的模型</div>
                       <div className="model-tags">
-                        {plugin.manifest.models.map((m) => (
+                        {plugin.manifest.models.slice(0, 8).map((m) => (
                           <span key={m.id}>{m.name}</span>
                         ))}
+                        {plugin.manifest.models.length > 8 && (
+                          <span>
+                            共 {plugin.manifest.models.length} 个配置 ·
+                            导入时搜索
+                          </span>
+                        )}
                       </div>
                       <div className="plugin-runtime">
                         <Cpu size={16} />
@@ -1806,7 +1826,14 @@ export default function App() {
                 <p className="muted">
                   选择插件支持的模型，导入权重并执行一次加载检查。
                 </p>
-                <div className="two-fields">
+                <div
+                  className={
+                    "two-fields " +
+                    ((formPlugin?.manifest.models.length || 0) > 20
+                      ? "catalog-fields"
+                      : "")
+                  }
+                >
                   <label className="field">
                     <span>模型插件</span>
                     <select
@@ -1822,31 +1849,24 @@ export default function App() {
                       ))}
                     </select>
                   </label>
-                  <label className="field">
-                    <span>支持模型</span>
-                    <select
-                      aria-label="支持模型"
-                      disabled={!!busy}
-                      value={modelType}
-                      onChange={(e) => {
-                        if (modelSource === "url") setWeight("");
-                        setModelType(e.target.value);
-                        setModelParams(
-                          defaults(
-                            formPlugin?.manifest.models.find(
-                              (m) => m.id === e.target.value,
-                            ),
-                          ),
-                        );
-                      }}
-                    >
-                      {formPlugin?.manifest.models.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  <ModelChooser
+                    key={modelPlugin}
+                    models={formPlugin?.manifest.models || []}
+                    value={modelType}
+                    disabled={!!busy}
+                    onChange={(id) => {
+                      if (["url", "pretrained"].includes(modelSource)) {
+                        setWeight("");
+                        setLabels("");
+                      }
+                      setModelType(id);
+                      setModelParams(
+                        defaults(
+                          formPlugin?.manifest.models.find((m) => m.id === id),
+                        ),
+                      );
+                    }}
+                  />
                 </div>
                 {!readyForPlugin(modelPlugin) && (
                   <div className="alert warning">
@@ -1881,6 +1901,13 @@ export default function App() {
                     value={modelSource}
                     onChange={(e) => {
                       setModelSource(e.target.value);
+                      if (e.target.value === "pretrained")
+                        setModelParams({
+                          ...modelParams,
+                          num_classes:
+                            formSpec?.extensions?.pretrained?.num_classes ||
+                            1000,
+                        });
                       setWeight("");
                       setLabels("");
                     }}
@@ -1892,15 +1919,22 @@ export default function App() {
                       <option value="remote">远端已有路径</option>
                     )}
                     <option value="url">URL 下载</option>
+                    {formSpec?.extensions?.pretrained && (
+                      <option value="pretrained">官方预训练权重</option>
+                    )}
                   </select>
                 </label>
-                {modelSource === "url" ? (
+                {["url", "pretrained"].includes(modelSource) ? (
                   <WeightDownload
-                    key={`${nodeId}:${modelPlugin}:${modelType}`}
+                    key={`${nodeId}:${modelPlugin}:${modelType}:${modelSource}`}
                     nodeId={nodeId}
                     pluginId={modelPlugin}
                     modelId={modelType}
-                    onFile={setWeight}
+                    pretrained={modelSource === "pretrained"}
+                    onFile={(path, labelPath) => {
+                      setWeight(path);
+                      if (labelPath) setLabels(labelPath);
+                    }}
                     onBusy={(message) => {
                       setModelDownloading(!!message);
                       setBusy(message);
@@ -1944,6 +1978,14 @@ export default function App() {
                     </div>
                   </label>
                 )}
+                {formSpec?.extensions?.pretrained &&
+                  modelSource === "pretrained" && (
+                    <p className="muted small-text">
+                      类别数：1000 · 权重许可：
+                      {formSpec.extensions.pretrained.license}
+                      。不同权重的使用条件以发布方为准。
+                    </p>
+                  )}
                 <label className="field">
                   <span>
                     类别文件 <small>可选 · UTF-8，每行一个类别</small>
@@ -1951,7 +1993,11 @@ export default function App() {
                   <div className="path-input">
                     <input
                       aria-label="类别文件"
-                      placeholder="未提供时使用类别编号"
+                      placeholder={
+                        nodeId !== "local" && modelSource !== "local"
+                          ? "/data/labels.txt（可选）"
+                          : "未提供时使用类别编号"
+                      }
                       value={labels}
                       onChange={(e) => setLabels(e.target.value)}
                     />
@@ -1974,6 +2020,9 @@ export default function App() {
                   <ParamsFields
                     spec={formSpec}
                     value={modelParams}
+                    disabledKeys={
+                      modelSource === "pretrained" ? ["num_classes"] : []
+                    }
                     onChange={setModelParams}
                   />
                 </div>

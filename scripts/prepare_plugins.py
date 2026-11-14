@@ -30,7 +30,7 @@ def main():
         check=True,
     )
     source = ROOT / "dist/modeldock_sdk-0.1.0-py3-none-any.whl"
-    for name in ("efficientnet", "yolo"):
+    for name in ("efficientnet", "yolo", "timm"):
         plugin = ROOT / "plugins" / name
         (plugin / "vendor").mkdir(exist_ok=True)
         shutil.copyfile(source, plugin / "vendor" / source.name)

@@ -1,0 +1,47 @@
+{
+  "timm_name": "mobilenetv3_large_150d.ra4_e3600_r256_in1k",
+  "pretrained_cfg": {
+    "url": "",
+    "hf_hub_id": "timm/mobilenetv3_large_150d.ra4_e3600_r256_in1k",
+    "architecture": "mobilenetv3_large_150d",
+    "tag": "ra4_e3600_r256_in1k",
+    "custom_load": false,
+    "input_size": [
+      3,
+      256,
+      256
+    ],
+    "test_input_size": [
+      3,
+      320,
+      320
+    ],
+    "fixed_input_size": false,
+    "interpolation": "bilinear",
+    "crop_pct": 0.95,
+    "test_crop_pct": 1.0,
+    "crop_mode": "center",
+    "mean": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "std": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "num_classes": 1000,
+    "pool_size": [
+      8,
+      8
+    ],
+    "first_conv": "conv_stem",
+    "classifier": "classifier",
+    "license": "apache-2.0"
+  },
+  "input_size": [
+    256,
+    256
+  ]
+}

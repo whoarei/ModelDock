@@ -8,6 +8,10 @@ export interface ModelSpec {
   parameter_schema_data?: { properties: Record<string, any> };
   config_data?: { input_size: number[] };
   capabilities?: { timing_mode: string };
+  extensions?: {
+    family?: string;
+    pretrained?: { num_classes: number; license: string; homepage: string };
+  };
 }
 export interface Plugin {
   id: string;

@@ -36,13 +36,14 @@ const binary =
 const weightBytes = await fs.readFile(
   path.join(fixtures, "color-classifier.onnx"),
 );
-const weightHash = createHash("sha256").update(weightBytes).digest("hex");
-const weightServer = http.createServer((_request, response) => {
+let timmBytes;
+const weightServer = http.createServer((request, response) => {
+  const bytes = request.url === "/timm.safetensors" ? timmBytes : weightBytes;
   response.writeHead(200, {
     "Content-Type": "application/octet-stream",
-    "Content-Length": weightBytes.length,
+    "Content-Length": bytes.length,
   });
-  response.end(weightBytes);
+  response.end(bytes);
 });
 await new Promise((resolve) => weightServer.listen(0, "127.0.0.1", resolve));
 const weightURL = `http://127.0.0.1:${weightServer.address().port}/model.onnx`;
@@ -98,9 +99,12 @@ try {
   }
   let state = await api("state");
   assert.equal(state.version, version);
-  for (const name of ["efficientnet", "yolo"]) {
-    await api("install_plugin", { plugin_id: name, profile_id: "onnx-cpu" });
-    const stop = Date.now() + 240000;
+  for (const name of ["efficientnet", "yolo", "timm"]) {
+    await api("install_plugin", {
+      plugin_id: name,
+      profile_id: name === "timm" ? "torch-cpu" : "onnx-cpu",
+    });
+    const stop = Date.now() + 900000;
     while (Date.now() < stop) {
       state = await api("state");
       const installation = state.installations.find((i) => i.id === name);
@@ -114,6 +118,19 @@ try {
     }
     assert.equal(state.installations.find((i) => i.id === name).state, "ready");
   }
+  const timmPython = state.installations.find((i) => i.id === "timm").python;
+  execFileSync(timmPython, [
+    path.join(root, "scripts/create_timm_fixtures.py"),
+    fixtures,
+  ]);
+  timmBytes = await fs.readFile(
+    path.join(fixtures, "timm-classifier.safetensors"),
+  );
+  const timmModelId = state.plugins
+    .find((p) => p.id === "timm")
+    .manifest.models.find(
+      (m) => m.name === "mobilenetv3_small_050.lamb_in1k",
+    ).id;
   for (const [name, plugin, model, weight, labels, parameters] of [
     [
       "颜色分类 · Windows 原生",
@@ -131,15 +148,30 @@ try {
       "detection-labels.txt",
       {},
     ],
+    [
+      "timm 分类 · Windows 原生",
+      "timm",
+      timmModelId,
+      "timm-classifier.safetensors",
+      "timm-labels.txt",
+      { num_classes: 3, top_k: 2 },
+    ],
   ]) {
     let weightPath = path.join(fixtures, weight);
-    if (plugin === "efficientnet") {
+    if (["efficientnet", "timm"].includes(plugin)) {
+      const expectedBytes = plugin === "timm" ? timmBytes : weightBytes;
+      const expectedHash = createHash("sha256")
+        .update(expectedBytes)
+        .digest("hex");
       let download = await api("start_download", {
         plugin_id: plugin,
         model_id: model,
-        url: weightURL,
-        filename: "网址分类.onnx",
-        sha256: weightHash,
+        url:
+          plugin === "timm"
+            ? weightURL.replace("/model.onnx", "/timm.safetensors")
+            : weightURL,
+        filename: plugin === "timm" ? "网址分类.safetensors" : "网址分类.onnx",
+        sha256: expectedHash,
       });
       const stop = Date.now() + 60000;
       while (
@@ -150,9 +182,9 @@ try {
         download = await api("download_status", { id: download.id });
       }
       assert.equal(download.state, "succeeded", JSON.stringify(download));
-      assert.equal(download.sha256, weightHash);
+      assert.equal(download.sha256, expectedHash);
       assert.equal(download.verified, true);
-      assert.deepEqual(await fs.readFile(download.path), weightBytes);
+      assert.deepEqual(await fs.readFile(download.path), expectedBytes);
       weightPath = download.path;
     }
     const instance = await api("create_model", {
@@ -185,6 +217,8 @@ try {
     assert(result.metrics.stages.inference_ms.mean > 0);
     if (plugin === "efficientnet")
       assert.equal(result.results[0].prediction.top_k[0].label, "red");
+    else if (plugin === "timm")
+      assert.equal(result.results[0].prediction.top_k[0].label, "green");
     else assert.equal(result.results[0].prediction.detections.length, 2);
     const preview = await api("preview", {
       task_id: task.id,
@@ -231,6 +265,7 @@ try {
           "isolated uv environments",
           "URL weights and SHA-256 verification",
           "classification",
+          "timm CPU classification and tensor checkpoint",
           "detection and NMS",
           "preview",
           "file export",

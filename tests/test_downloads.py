@@ -139,3 +139,27 @@ def test_url_weight_loads_and_runs_real_onnx(environment, fixtures, file_server)
         result["state"] == "SUCCEEDED"
         and result["results"][0]["prediction"]["top_k"][0]["label"] == "red"
     )
+
+
+def test_pretrained_download_fallback_and_node_labels(isolated_downloads, file_server, tmp_path):
+    base, state = file_server
+    (tmp_path / "labels.txt").write_text("first\nsecond\n", encoding="utf-8")
+    plugin = store.get("plugin", "yolo")
+    plugin["path"] = str(tmp_path)
+    plugin["manifest"]["models"][0]["extensions"] = dict(
+        pretrained=dict(
+            labels="labels.txt",
+            candidates=[
+                dict(url=base + "/missing", filename="missing.onnx"),
+                dict(url=base + "/model.onnx", filename="pretrained.onnx"),
+            ],
+        )
+    )
+    store.put("plugin", "yolo", plugin)
+    result = done(
+        api("start_download", dict(plugin_id="yolo", model_id="yolov8n", pretrained=True))["id"]
+    )
+    assert result["state"] == "succeeded", result
+    assert Path(result["path"]).read_bytes() == state["payload"]
+    assert result["filename"] == "pretrained.onnx"
+    assert Path(result["labels_path"]).read_text(encoding="utf-8") == "first\nsecond\n"
