@@ -1,6 +1,6 @@
 # 插件接口维护
 
-- `docs/sources/python-plugin-protocol.json` 是插件契约的可编辑来源，`docs/python-plugin-protocol.html` 是对应的离线说明。新增插件或扩展能力时，同步维护这份文档，使用 README 指定的 rtd-html-docs 渲染器重建并验证。
+- `docs/sources/python-plugin-protocol.json` 是插件契约的可编辑来源，`docs/python-plugin-protocol.html` 是对应的离线说明。新增插件或扩展能力时，同步维护这份文档，使用 `docs/development.md` 指定的 rtd-html-docs 渲染器重建并验证。
 - 保持 Worker 与控制器独立于模型框架。跨插件通用需求通过有明确语义和版本的可选接口扩展；模型专属参数、预处理与权重约定保留在插件配置中。
 - 基础生命周期为 `load`、`predict`、`close`。可选接口必须说明调用阶段、输入输出、失败行为与缺失时的回退。新插件不应伪造另一框架的对象来迎合内部实现。
 - 应用共用的清单扩展放在 `extensions.modeldock`；插件专属扩展使用插件 ID 作为命名空间。不得默默改变现有字段含义或把插件专属参数名写死在通用界面中。
