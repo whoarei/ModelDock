@@ -17,6 +17,52 @@
 .update-modal {
   color: #293641;
 }
+.weight-download {
+  margin-top: 20px;
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fafcfc;
+}
+.weight-download > .field {
+  margin-top: 0;
+}
+.download-options {
+  margin: 14px 0;
+}
+.download-options summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 11px;
+}
+.download-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.download-status {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 11px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.download-status progress {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.download-success {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--accent-dark);
+}
+.weight-download .alert {
+  margin-top: 14px;
+}
 .update-dot {
   width: 7px;
   height: 7px;

@@ -33,6 +33,7 @@ import { api, pickFiles, exportTask } from "./api";
 import { Performance, number } from "./charts";
 import Viewer from "./Viewer";
 import AppUpdates from "./AppUpdates";
+import WeightDownload from "./WeightDownload";
 import { APP_VERSION } from "./updater";
 import type {
   Params,
@@ -232,6 +233,10 @@ export default function App() {
     [modal, setModal] = useState<
       null | "model" | "node" | "help" | "fingerprint" | "compare"
     >(null);
+  const [modelDownloading, setModelDownloading] = useState(false);
+  function closeModal() {
+    if (!busy || modelDownloading) setModal(null);
+  }
   const [selectedModel, setSelectedModel] = useState(""),
     [paths, setPaths] = useState<string[]>([]),
     [remotePaths, setRemotePaths] = useState(""),
@@ -351,11 +356,11 @@ export default function App() {
   }, [notice]);
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setModal(null);
+      if (e.key === "Escape") closeModal();
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, []);
+  }, [busy, modelDownloading]);
   const models = snapshot?.models || [],
     plugins = snapshot?.plugins || [],
     tasks = snapshot?.tasks || [],
@@ -465,7 +470,7 @@ export default function App() {
         weight_path: weight,
         labels_path: labels,
         parameters: modelParams,
-        source: modelSource,
+        source: modelSource === "url" ? "remote" : modelSource,
       });
       if (value.state !== "ready")
         throw new Error(value.error || "模型验证失败");
@@ -518,6 +523,7 @@ export default function App() {
     });
   }
   function setPlugin(id: string) {
+    if (modelSource === "url") setWeight("");
     setModelPlugin(id);
     const p = plugins.find((p) => p.id === id);
     if (p) {
@@ -1746,7 +1752,7 @@ export default function App() {
         <div
           className="modal-backdrop"
           onMouseDown={(e) => {
-            if (e.target === e.currentTarget && !busy) setModal(null);
+            if (e.target === e.currentTarget) closeModal();
           }}
         >
           <section
@@ -1778,7 +1784,8 @@ export default function App() {
               <button
                 className="icon-button"
                 aria-label="关闭对话框"
-                onClick={() => setModal(null)}
+                disabled={!!busy && !modelDownloading}
+                onClick={closeModal}
               >
                 <X size={19} />
               </button>
@@ -1804,6 +1811,7 @@ export default function App() {
                     <span>模型插件</span>
                     <select
                       aria-label="模型插件"
+                      disabled={!!busy}
                       value={modelPlugin}
                       onChange={(e) => setPlugin(e.target.value)}
                     >
@@ -1818,8 +1826,10 @@ export default function App() {
                     <span>支持模型</span>
                     <select
                       aria-label="支持模型"
+                      disabled={!!busy}
                       value={modelType}
                       onChange={(e) => {
+                        if (modelSource === "url") setWeight("");
                         setModelType(e.target.value);
                         setModelParams(
                           defaults(
@@ -1844,6 +1854,7 @@ export default function App() {
                     <span>请先在插件管理中准备此插件的运行环境。</span>
                     <button
                       type="button"
+                      disabled={!!busy}
                       onClick={() => {
                         setModal(null);
                         setPage("plugins");
@@ -1862,58 +1873,77 @@ export default function App() {
                     onChange={(e) => setModelName(e.target.value)}
                   />
                 </label>
-                {nodeId !== "local" && (
-                  <label className="field">
-                    <span>权重来源</span>
-                    <select
-                      value={modelSource}
-                      onChange={(e) => {
-                        setModelSource(e.target.value);
-                        setWeight("");
-                        setLabels("");
-                      }}
-                    >
-                      <option value="local">上传本机文件</option>
+                <label className="field">
+                  <span>权重来源</span>
+                  <select
+                    aria-label="权重来源"
+                    disabled={!!busy}
+                    value={modelSource}
+                    onChange={(e) => {
+                      setModelSource(e.target.value);
+                      setWeight("");
+                      setLabels("");
+                    }}
+                  >
+                    <option value="local">
+                      {nodeId === "local" ? "本机文件" : "上传本机文件"}
+                    </option>
+                    {nodeId !== "local" && (
                       <option value="remote">远端已有路径</option>
-                    </select>
+                    )}
+                    <option value="url">URL 下载</option>
+                  </select>
+                </label>
+                {modelSource === "url" ? (
+                  <WeightDownload
+                    key={`${nodeId}:${modelPlugin}:${modelType}`}
+                    nodeId={nodeId}
+                    pluginId={modelPlugin}
+                    modelId={modelType}
+                    onFile={setWeight}
+                    onBusy={(message) => {
+                      setModelDownloading(!!message);
+                      setBusy(message);
+                    }}
+                  />
+                ) : (
+                  <label className="field">
+                    <span>
+                      {(formSpec?.weight_formats || ["onnx"])
+                        .join(" / ")
+                        .toUpperCase()}{" "}
+                      权重文件
+                    </span>
+                    <div className="path-input">
+                      <input
+                        required
+                        aria-label="权重文件"
+                        placeholder={
+                          modelSource === "remote"
+                            ? "/data/model.onnx"
+                            : "选择 .onnx 文件"
+                        }
+                        value={weight}
+                        onChange={(e) => setWeight(e.target.value)}
+                      />
+                      {modelSource === "local" && (
+                        <button
+                          type="button"
+                          aria-label="选择权重文件"
+                          onClick={() =>
+                            pickFiles({
+                              extensions: formSpec?.weight_formats || ["onnx"],
+                            })
+                              .then((p) => p[0] && setWeight(p[0]))
+                              .catch(handleError)
+                          }
+                        >
+                          <FolderOpen size={17} />
+                        </button>
+                      )}
+                    </div>
                   </label>
                 )}
-                <label className="field">
-                  <span>
-                    {(formSpec?.weight_formats || ["onnx"])
-                      .join(" / ")
-                      .toUpperCase()}{" "}
-                    权重文件
-                  </span>
-                  <div className="path-input">
-                    <input
-                      required
-                      aria-label="权重文件"
-                      placeholder={
-                        modelSource === "remote"
-                          ? "/data/model.onnx"
-                          : "选择 .onnx 文件"
-                      }
-                      value={weight}
-                      onChange={(e) => setWeight(e.target.value)}
-                    />
-                    {modelSource === "local" && (
-                      <button
-                        type="button"
-                        aria-label="选择权重文件"
-                        onClick={() =>
-                          pickFiles({
-                            extensions: formSpec?.weight_formats || ["onnx"],
-                          })
-                            .then((p) => p[0] && setWeight(p[0]))
-                            .catch(handleError)
-                        }
-                      >
-                        <FolderOpen size={17} />
-                      </button>
-                    )}
-                  </div>
-                </label>
                 <label className="field">
                   <span>
                     类别文件 <small>可选 · UTF-8，每行一个类别</small>
@@ -1925,7 +1955,7 @@ export default function App() {
                       value={labels}
                       onChange={(e) => setLabels(e.target.value)}
                     />
-                    {modelSource === "local" && (
+                    {(modelSource === "local" || nodeId === "local") && (
                       <button
                         type="button"
                         aria-label="选择类别文件"
@@ -1951,7 +1981,8 @@ export default function App() {
                   <button
                     type="button"
                     className="button"
-                    onClick={() => setModal(null)}
+                    disabled={!!busy && !modelDownloading}
+                    onClick={closeModal}
                   >
                     取消
                   </button>

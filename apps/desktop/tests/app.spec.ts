@@ -185,6 +185,9 @@ test("real ONNX workflow: environments, import, predictions, charts, filtering a
   chooser = page.waitForEvent("filechooser");
   await page.locator(".upload-zone").click();
   await (await chooser).setFiles(path.join(fixtures, "red.png"));
+  // File selection starts an asynchronous upload through the development bridge.
+  // Wait for the previous batch selection to be replaced before submitting.
+  await expect(page.locator(".upload-zone")).toContainText("已选择 1 个输入");
   await page.getByRole("button", { name: "开始测试", exact: true }).click();
   await expect(page.getByText("已完成", { exact: true })).toBeVisible();
   await expect(page.locator('svg[aria-label="检测框"] > g')).toHaveCount(2);
