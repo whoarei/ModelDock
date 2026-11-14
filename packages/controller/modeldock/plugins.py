@@ -31,7 +31,7 @@ def unpack(archive, target):
         bundle.extractall(target)
 
 
-def register(path):
+def register(path, *, only_if_missing=False):
     source = Path(path).resolve()
     staging = store.root() / "staging" / store.uid()
     staging.parent.mkdir(parents=True, exist_ok=True)
@@ -63,7 +63,30 @@ def register(path):
         )
         target.parent.mkdir(parents=True, exist_ok=True)
         if not target.exists():
-            shutil.move(str(staging), target)
+            try:
+                staging.rename(target)
+            except OSError:
+                # A parallel bootstrap may have published the identical package.
+                # rename is atomic; shutil.move would nest the losing staging dir.
+                if not (target / "manifest.json").is_file():
+                    raise
+        value = dict(
+            id=ident,
+            manifest=manifest,
+            digest=package_digest,
+            path=str(target),
+            imported_at=time.time(),
+        )
+        if only_if_missing:
+            with store.connect() as db:
+                db.execute(
+                    "INSERT INTO items VALUES('plugin',?,?) ON CONFLICT(kind,id) DO NOTHING",
+                    (ident, json.dumps(value, ensure_ascii=False)),
+                )
+                row = db.execute(
+                    "SELECT value FROM items WHERE kind='plugin' AND id=?", (ident,)
+                ).fetchone()
+            return json.loads(row[0])
         previous = store.get("plugin", ident)
         active = store.get("installation", ident)
         if active and active.get("state") == "preparing":
@@ -74,13 +97,6 @@ def register(path):
             and any(j["plugin_id"] == ident for j in store.active_jobs())
         ):
             raise ValueError("插件有未完成任务，不能替换插件包")
-        value = dict(
-            id=ident,
-            manifest=manifest,
-            digest=package_digest,
-            path=str(target),
-            imported_at=time.time(),
-        )
         store.put("plugin", ident, value)
         return value
     finally:

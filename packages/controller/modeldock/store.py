@@ -42,20 +42,40 @@ def resources():
 def connect():
     base = root()
     base.mkdir(parents=True, exist_ok=True)
-    db = sqlite3.connect(base / "app.sqlite", timeout=30)
-    db.row_factory = sqlite3.Row
-    db.execute("PRAGMA journal_mode=WAL")
-    db.execute(
-        "CREATE TABLE IF NOT EXISTS items(kind TEXT, id TEXT, value TEXT NOT NULL, PRIMARY KEY(kind,id))"
-    )
-    db.execute(
-        "CREATE TABLE IF NOT EXISTS jobs(id TEXT PRIMARY KEY, state TEXT NOT NULL, value TEXT NOT NULL)"
-    )
-    db.execute(
-        "CREATE TABLE IF NOT EXISTS events(seq INTEGER PRIMARY KEY AUTOINCREMENT, job_id TEXT NOT NULL, value TEXT NOT NULL)"
-    )
-    db.execute("PRAGMA user_version=1")
-    return db
+    deadline = time.monotonic() + 30
+    while True:
+        db = sqlite3.connect(base / "app.sqlite", timeout=30)
+        db.row_factory = sqlite3.Row
+        try:
+            # WAL transitions can return SQLITE_BUSY immediately during parallel
+            # first opens, even with busy_timeout. Do not rewrite headers on reads.
+            if db.execute("PRAGMA journal_mode").fetchone()[0] != "wal":
+                db.execute("PRAGMA journal_mode=WAL")
+            if db.execute("PRAGMA user_version").fetchone()[0] == 0:
+                with db:
+                    db.execute("BEGIN IMMEDIATE")
+                    db.execute(
+                        "CREATE TABLE IF NOT EXISTS items(kind TEXT, id TEXT, value TEXT NOT NULL, PRIMARY KEY(kind,id))"
+                    )
+                    db.execute(
+                        "CREATE TABLE IF NOT EXISTS jobs(id TEXT PRIMARY KEY, state TEXT NOT NULL, value TEXT NOT NULL)"
+                    )
+                    db.execute(
+                        "CREATE TABLE IF NOT EXISTS events(seq INTEGER PRIMARY KEY AUTOINCREMENT, job_id TEXT NOT NULL, value TEXT NOT NULL)"
+                    )
+                    db.execute("PRAGMA user_version=1")
+            return db
+        except sqlite3.OperationalError as exc:
+            db.close()
+            if (getattr(exc, "sqlite_errorcode", 0) & 255) not in (
+                sqlite3.SQLITE_BUSY,
+                sqlite3.SQLITE_LOCKED,
+            ) or time.monotonic() >= deadline:
+                raise
+            time.sleep(0.05)
+        except Exception:
+            db.close()
+            raise
 
 
 def uid():

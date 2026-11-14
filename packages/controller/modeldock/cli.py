@@ -13,7 +13,7 @@ def initialize():
     for name in ("efficientnet", "yolo", "timm"):
         directory = store.resources() / "plugins" / name
         if not store.get("plugin", name) and (directory / "manifest.json").is_file():
-            plugins.register(directory)
+            plugins.register(directory, only_if_missing=True)
 
 
 def plugin_metadata():
