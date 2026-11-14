@@ -1,0 +1,8 @@
+{
+  "version": "0.3.0",
+  "installer_sha256": "fda4b6d9520c535a48e14c23bd71946c54ad00ddb6423427f3f2a3caaaf3f3ef",
+  "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTZmFCQ2NGZzFtdkE1U2UrQmhBK25KSTQ1bTlpd0s4a2loZy9Cc2IzcE9waGpTbVF5Q0R1dGYzeEJmVTdJRE9hd3VaSlA2L20wLzlsL0lNVmlvd2dtc3VUOU9KeXZNT3dBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NjMxMjQyCWZpbGU6TW9kZWxEb2NrXzAuMy4wX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjMuMApnYmdiRmZTaWw3d1pmOGFPbS84SXpaZTdYK2FOWTdyUWRleFdkVE1tZ3ZOeFFhWWsxT21xeUNjNVd5anpFMkpaRFJleUQya2FvdjhLaXVTeEZkU3lDQT09Cg==",
+  "artifact_run_id": 43557156388,
+  "source_sha": "ecbe832a333f43726338b1dcb70c3495697c1d0f",
+  "expected_candidate_tag_sha": "ecbe832a333f43726338b1dcb70c3495697c1d0f"
+}
