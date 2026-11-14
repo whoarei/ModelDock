@@ -279,11 +279,10 @@ def run(ident):
             retryable=False,
         )
     metrics["input_verification_ms"] = (time.perf_counter_ns() - verification_started) / 1e6
-    for name in ("modeldock-sdk", "onnxruntime", "numpy", "Pillow"):
-        try:
-            dependencies[name] = importlib.metadata.version(name)
-        except importlib.metadata.PackageNotFoundError:
-            pass
+    for distribution in importlib.metadata.distributions():
+        name = distribution.metadata.get("Name")
+        if name:
+            dependencies[name] = distribution.version
     cancelled = cancelled or (directory / "cancel").exists()
     report = dict(
         version="0.1.0",
@@ -306,7 +305,10 @@ def run(ident):
         threads=config["threads"],
         precision="model-defined",
         input_dtype=(config["instance"].get("validation", {}).get("inputs") or [{}])[0].get(
-            "type", "plugin-defined"
+            "dtype",
+            (config["instance"].get("validation", {}).get("inputs") or [{}])[0].get(
+                "type", "plugin-defined"
+            ),
         ),
         environment_fingerprint=config["installation"]["fingerprint"],
         profile=config["installation"]["profile_id"],

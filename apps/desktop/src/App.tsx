@@ -850,9 +850,9 @@ export default function App() {
                           <Boxes size={18} />
                         </div>
                         <div>
-                          <strong>{currentModel.model_id}</strong>
+                          <strong>{spec?.name || currentModel.model_id}</strong>
                           <span>
-                            ONNX ·{" "}
+                            {engineName} ·{" "}
                             {currentModel.task === "classification"
                               ? "图像分类"
                               : "目标检测"}
@@ -1298,7 +1298,12 @@ export default function App() {
                         </div>
                         <h3>{model.name}</h3>
                         <p>
-                          {model.model_id} ·{" "}
+                          {plugins
+                            .find((p) => p.id === model.plugin_id)
+                            ?.manifest.models.find(
+                              (m) => m.id === model.model_id,
+                            )?.name || model.model_id}{" "}
+                          ·{" "}
                           {model.task === "classification"
                             ? "图像分类"
                             : "目标检测"}

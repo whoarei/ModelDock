@@ -70,6 +70,9 @@ def test_timm_classification_timing_and_reproducible_checkpoint(timm_runtime, fi
     assert result["results"][0]["prediction"]["top_k"][0]["label"] == "green"
     assert result["metrics"]["count"] == 2
     assert result["metrics"]["stages"]["inference_ms"]["mean"] > 0
+    assert result["report"]["input_dtype"] == "float32"
+    assert result["report"]["dependencies"]["timm"] == "1.0.31"
+    assert result["report"]["dependencies"]["torch"].startswith("2.10.0")
 
 
 @pytest.mark.parametrize(

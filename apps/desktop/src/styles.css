@@ -694,6 +694,13 @@ input[type="checkbox"] {
   color: #5d717e;
   display: block;
   font-weight: 550;
+  overflow-wrap: anywhere;
+}
+.model-mini > div:nth-child(2) {
+  min-width: 0;
+}
+.model-card > p {
+  overflow-wrap: anywhere;
 }
 .model-mini span {
   font-size: 9px;

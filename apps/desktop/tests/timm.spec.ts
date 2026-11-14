@@ -92,6 +92,9 @@ test("timm official weights download, ImageNet labels and actual inference", asy
   await expect(
     page.getByText("PyTorch", { exact: true }).first(),
   ).toBeVisible();
+  await expect(page.locator(".model-mini")).toContainText(modelName);
+  await expect(page.locator(".model-mini")).toContainText("PyTorch");
+  await expect(page.locator(".model-mini")).not.toContainText("ONNX");
   execFileSync(python, [
     path.join(root, "scripts/create_timm_fixtures.py"),
     fixtures,
