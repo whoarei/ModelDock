@@ -1,0 +1,42 @@
+{
+  "timm_name": "regnety_008_tv.tv2_in1k",
+  "pretrained_cfg": {
+    "url": "https://download.pytorch.org/models/regnet_y_800mf-58fc7688.pth",
+    "hf_hub_id": "timm/regnety_008_tv.tv2_in1k",
+    "architecture": "regnety_008_tv",
+    "tag": "tv2_in1k",
+    "custom_load": false,
+    "input_size": [
+      3,
+      224,
+      224
+    ],
+    "fixed_input_size": false,
+    "interpolation": "bicubic",
+    "crop_pct": 0.965,
+    "crop_mode": "center",
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "num_classes": 1000,
+    "pool_size": [
+      7,
+      7
+    ],
+    "first_conv": "stem.conv",
+    "classifier": "head.fc",
+    "license": "bsd-3-clause",
+    "origin_url": "https://github.com/pytorch/vision"
+  },
+  "input_size": [
+    224,
+    224
+  ]
+}

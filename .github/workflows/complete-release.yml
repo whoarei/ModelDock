@@ -35,7 +35,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.record.outputs.tag }}
         run: |
-          test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = true
           python - <<'PY'
           import hashlib,json,pathlib,os,subprocess,re
           version=os.environ['RELEASE_TAG'][1:]
@@ -53,6 +52,20 @@ jobs:
               subprocess.run(['gh','release','download',os.environ['RELEASE_TAG'],'--dir','release-assets','--pattern','*-setup.exe'],check=True)
           installer=pathlib.Path(f'release-assets/ModelDock_{version}_x64-setup.exe')
           assert hashlib.sha256(installer.read_bytes()).hexdigest() == record['installer_sha256'], 'Installer changed since local signing'
+          tag=os.environ['RELEASE_TAG']
+          release=subprocess.run(['gh','release','view',tag,'--json','isDraft'],capture_output=True,text=True)
+          if release.returncode:
+              # First publication can reuse a passing source build, without
+              # rebuilding a signed installer from a second tag-triggered run.
+              assert 'artifact_run_id' in record, 'A draft must exist when no verified build is specified'
+              existing=subprocess.run(['gh','api',f'repos/{repo}/git/ref/tags/{tag}'],capture_output=True,text=True)
+              if existing.returncode:
+                  assert '404' in existing.stderr, 'Cannot verify candidate tag'
+                  payload=json.dumps(dict(ref=f'refs/tags/{tag}',sha=record['source_sha'])).encode()
+                  subprocess.run(['gh','api','--method','POST',f'repos/{repo}/git/refs','--input','-'],input=payload,check=True)
+              subprocess.run(['gh','release','create',tag,'--verify-tag','--draft','--title',f'ModelDock {version}','--notes-file',f'docs/releases/{version}.md'],check=True)
+          else:
+              assert json.loads(release.stdout)['isDraft'] is True, 'Published releases are immutable'
           installer.with_suffix('.exe.sig').write_text(record['signature'],encoding='utf-8')
           if 'artifact_run_id' in record:
               # Only an unpublished candidate tag may move, and only with an

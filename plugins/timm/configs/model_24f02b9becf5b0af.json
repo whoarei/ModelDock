@@ -1,0 +1,38 @@
+{
+  "timm_name": "vit_small_patch16_rope_224.naver_in1k",
+  "pretrained_cfg": {
+    "url": "",
+    "hf_hub_id": "timm/vit_small_patch16_rope_224.naver_in1k",
+    "architecture": "vit_small_patch16_rope_224",
+    "tag": "naver_in1k",
+    "custom_load": false,
+    "input_size": [
+      3,
+      224,
+      224
+    ],
+    "fixed_input_size": true,
+    "interpolation": "bicubic",
+    "crop_pct": 0.9,
+    "crop_mode": "center",
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "num_classes": 1000,
+    "pool_size": null,
+    "first_conv": "patch_embed.proj",
+    "classifier": "head",
+    "license": "apache-2.0"
+  },
+  "input_size": [
+    224,
+    224
+  ]
+}

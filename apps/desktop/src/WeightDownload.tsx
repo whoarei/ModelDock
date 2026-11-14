@@ -18,6 +18,7 @@ interface DownloadState {
   sha256?: string;
   verified?: boolean;
   error?: string;
+  labels_path?: string;
 }
 const terminal = new Set(["succeeded", "failed", "cancelled"]);
 const mb = (bytes: number) => (bytes / 1024 / 1024).toFixed(1) + " MB";
@@ -28,12 +29,14 @@ export default function WeightDownload({
   modelId,
   onFile,
   onBusy,
+  pretrained = false,
 }: {
   nodeId: string;
   pluginId: string;
   modelId: string;
-  onFile: (path: string) => void;
+  onFile: (path: string, labelsPath?: string) => void;
   onBusy: (message: string) => void;
+  pretrained?: boolean;
 }) {
   const [url, setUrl] = useState("");
   const [name, setName] = useState("");
@@ -52,7 +55,8 @@ export default function WeightDownload({
     setDownload(value);
     if (terminal.has(value.state)) {
       onBusy("");
-      if (value.state === "succeeded" && value.path) onFile(value.path);
+      if (value.state === "succeeded" && value.path)
+        onFile(value.path, value.labels_path);
       if (value.state === "failed") setError(value.error || "下载失败，请重试");
     }
   }
@@ -123,6 +127,7 @@ export default function WeightDownload({
         url,
         filename: name,
         sha256: checksum,
+        pretrained,
       });
       if (mounted.current) receive(value);
       else
@@ -163,60 +168,66 @@ export default function WeightDownload({
     : null;
   return (
     <div className="weight-download">
-      <label className="field">
-        <span>权重下载 URL</span>
-        <input
-          aria-label="权重下载 URL"
-          type="url"
-          value={url}
-          disabled={busy}
-          placeholder="https://example.com/model.onnx"
-          onChange={(e) => {
-            reset();
-            setUrl(e.target.value);
-          }}
-        />
-      </label>
+      {!pretrained && (
+        <label className="field">
+          <span>权重下载 URL</span>
+          <input
+            aria-label="权重下载 URL"
+            type="url"
+            value={url}
+            disabled={busy}
+            placeholder="https://example.com/model.onnx"
+            onChange={(e) => {
+              reset();
+              setUrl(e.target.value);
+            }}
+          />
+        </label>
+      )}
       <p className="muted small-text">
-        使用 HTTP/HTTPS 文件直链。
+        {pretrained
+          ? "从模型发布方下载预训练权重，完成后关联插件提供的类别文件；文件会缓存到当前节点。"
+          : "使用 HTTP/HTTPS 文件直链。"}
         {nodeId === "local"
           ? "文件下载到本机。"
           : "文件由当前 SSH 节点直接下载，类别文件也需填写远端路径。"}
       </p>
-      <details className="download-options">
-        <summary>文件名与完整性校验（可选）</summary>
-        <label className="field">
-          <span>保存文件名</span>
-          <input
-            aria-label="保存文件名"
-            value={name}
-            disabled={busy}
-            placeholder="自动读取文件名"
-            onChange={(e) => {
-              reset();
-              setName(e.target.value);
-            }}
-          />
-        </label>
-        <label className="field">
-          <span>SHA-256 校验值</span>
-          <input
-            aria-label="SHA-256 校验值"
-            value={checksum}
-            disabled={busy}
-            placeholder="发布方提供的 64 位十六进制校验值"
-            onChange={(e) => {
-              reset();
-              setChecksum(e.target.value);
-            }}
-          />
-        </label>
-      </details>
+      {!pretrained && (
+        <details className="download-options">
+          <summary>文件名与完整性校验（可选）</summary>
+          <label className="field">
+            <span>保存文件名</span>
+            <input
+              aria-label="保存文件名"
+              value={name}
+              disabled={busy}
+              placeholder="自动读取文件名"
+              onChange={(e) => {
+                reset();
+                setName(e.target.value);
+              }}
+            />
+          </label>
+          <label className="field">
+            <span>SHA-256 校验值</span>
+            <input
+              aria-label="SHA-256 校验值"
+              value={checksum}
+              disabled={busy}
+              placeholder="发布方提供的 64 位十六进制校验值"
+              onChange={(e) => {
+                reset();
+                setChecksum(e.target.value);
+              }}
+            />
+          </label>
+        </details>
+      )}
       <div className="download-actions">
         <button
           className="button"
           type="button"
-          disabled={busy || !url.trim()}
+          disabled={busy || (!pretrained && !url.trim())}
           onClick={() => void start()}
         >
           {starting ? (

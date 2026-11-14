@@ -1,0 +1,41 @@
+{
+  "timm_name": "resnetv2_152x2_bit.goog_teacher_in21k_ft_in1k",
+  "pretrained_cfg": {
+    "url": "",
+    "hf_hub_id": "timm/resnetv2_152x2_bit.goog_teacher_in21k_ft_in1k",
+    "architecture": "resnetv2_152x2_bit",
+    "tag": "goog_teacher_in21k_ft_in1k",
+    "custom_load": true,
+    "input_size": [
+      3,
+      224,
+      224
+    ],
+    "fixed_input_size": false,
+    "interpolation": "bicubic",
+    "crop_pct": 0.875,
+    "crop_mode": "center",
+    "mean": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "std": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "num_classes": 1000,
+    "pool_size": [
+      7,
+      7
+    ],
+    "first_conv": "stem.conv",
+    "classifier": "head.fc",
+    "license": "apache-2.0"
+  },
+  "input_size": [
+    224,
+    224
+  ]
+}

@@ -694,6 +694,13 @@ input[type="checkbox"] {
   color: #5d717e;
   display: block;
   font-weight: 550;
+  overflow-wrap: anywhere;
+}
+.model-mini > div:nth-child(2) {
+  min-width: 0;
+}
+.model-card > p {
+  overflow-wrap: anywhere;
 }
 .model-mini span {
   font-size: 9px;
@@ -2489,4 +2496,17 @@ td {
 }
 th {
   font-size: 10px;
+}
+
+.catalog-fields {
+  grid-template-columns: 1fr;
+}
+.model-chooser {
+  min-width: 0;
+}
+.model-chooser .model-search {
+  margin-bottom: 16px;
+}
+.model-chooser select {
+  width: 100%;
 }

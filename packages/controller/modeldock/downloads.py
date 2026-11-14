@@ -14,6 +14,7 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from . import store
 from .resources import process_birth
+from modeldock_sdk.manifest import inside
 
 MAX_BYTES = 2 * 1024**3
 TERMINAL = {"succeeded", "failed", "cancelled"}
@@ -136,8 +137,6 @@ def active():
 
 
 def start(args):
-    raw_url = args.get("url", "")
-    url = validate_url(raw_url.strip() if isinstance(raw_url, str) else raw_url)
     plugin = store.get("plugin", args.get("plugin_id"))
     spec = (
         next((m for m in plugin["manifest"]["models"] if m["id"] == args.get("model_id")), None)
@@ -147,6 +146,22 @@ def start(args):
     if not spec:
         raise ValueError("请选择插件支持的模型")
     formats = [f.lower() for f in spec["weight_formats"]]
+    labels_path = None
+    if args.get("pretrained") is True:
+        preset = spec.get("extensions", {}).get("modeldock", {}).get("pretrained", {})
+        candidates = preset.get("candidates", [])
+        if not isinstance(candidates, list) or not 1 <= len(candidates) <= 3:
+            raise ValueError("此模型没有提供预训练权重下载来源")
+        candidates = [
+            dict(url=validate_url(c["url"]), filename=filename(c["filename"], formats))
+            for c in candidates
+        ]
+        if preset.get("labels"):
+            labels_path = str(inside(plugin["path"], preset["labels"]))
+    else:
+        raw_url = args.get("url", "")
+        url = validate_url(raw_url.strip() if isinstance(raw_url, str) else raw_url)
+        candidates = [dict(url=url, filename="")]
     name = args.get("filename", "").strip()
     if name:
         filename(name, formats)
@@ -180,7 +195,16 @@ def start(args):
         # responses and logs, and remove this private descriptor after reading.
         fd = os.open(base / "request.json", os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
         with os.fdopen(fd, "w", encoding="utf-8") as stream:
-            json.dump(dict(url=url, filename=name, formats=formats, expected=expected), stream)
+            json.dump(
+                dict(
+                    candidates=candidates,
+                    filename=name,
+                    formats=formats,
+                    expected=expected,
+                    labels_path=labels_path,
+                ),
+                stream,
+            )
         child = store.spawn_controller("download", ident)
         update(ident, pid=child.pid, birth=process_birth(child.pid))
     except Exception:
@@ -219,11 +243,21 @@ def run(ident):
         (base / "request.json").unlink()
         check_cancel()
         update(ident, state="downloading", pid=os.getpid(), birth=process_birth(os.getpid()))
-        request = Request(
-            validate_url(spec["url"]),
-            headers={"User-Agent": "ModelDock", "Accept-Encoding": "identity"},
-        )
-        with build_opener(Redirects()).open(request, timeout=30) as response:
+        response = None
+        for index, candidate in enumerate(spec["candidates"]):
+            check_cancel()
+            request = Request(
+                validate_url(candidate["url"]),
+                headers={"User-Agent": "ModelDock", "Accept-Encoding": "identity"},
+            )
+            try:
+                response = build_opener(Redirects()).open(request, timeout=30)
+                break
+            except HTTPError as exc:
+                if exc.code != 404 or index == len(spec["candidates"]) - 1:
+                    raise
+                exc.close()
+        with response:
             if response.status != 200:
                 raise ValueError("服务器没有返回完整文件，请使用完整下载直链")
             if response.headers.get_content_type() in ("text/html", "application/xhtml+xml"):
@@ -240,6 +274,7 @@ def run(ident):
             suggested["Content-Disposition"] = response.headers.get("Content-Disposition", "")
             name = (
                 spec["filename"]
+                or candidate["filename"]
                 or suggested.get_filename()
                 or unquote(urlsplit(response.url).path.rsplit("/", 1)[-1])
             )
@@ -285,6 +320,7 @@ def run(ident):
                 path=str(target),
                 sha256=checksum,
                 verified=bool(spec["expected"]),
+                labels_path=spec.get("labels_path"),
                 finished_at=time.time(),
             )
     except InterruptedError:

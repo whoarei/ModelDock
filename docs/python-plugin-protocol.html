@@ -702,10 +702,13 @@
       <a href="#timing"><span>13</span>性能扩展与计时约定</a>
       <a href="#errors-cancellation"><span>14</span>错误、日志与取消</a>
       <a href="#versioning-validation"><span>15</span>版本兼容与接入检查清单</a>
+      <a href="#timm-example"><span>16</span>timm 接入示例与应用扩展</a>
+      <a href="#describe-metadata"><span>17</span>可选模型描述 describe(context) · SDK 0.1.1</a>
+      <a href="#shared-extensions"><span>18</span>应用共用清单扩展与维护规则</a>
     </nav>
     <div class="foot">
       <div class="theme-control" hidden><label for="theme-select">文档配色</label><select id="theme-select"><optgroup label="经典配色"><option value="classic">经典蓝</option><option value="slate">石墨灰</option><option value="forest">森林绿</option></optgroup><optgroup label="亮色配色"><option value="sky">蓝色 · 亮色</option><option value="mint">绿色 · 亮色</option><option value="yellow">黄色 · 亮色</option><option value="pink">粉色 · 亮色</option><option value="apricot" selected>橙色 · 默认</option><option value="lavender">紫色 · 亮色</option></optgroup><optgroup label="深色配色"><option value="dark">深色</option></optgroup></select></div>
-      更新于 2026-11-13<br>版本 0.2 · SDK 0.1.0 实现参考<br>单文件 HTML · 支持离线阅读
+      更新于 2026-11-14<br>版本 0.4 · SDK 0.1.1<br>单文件 HTML · 支持离线阅读
       <button type="button" id="print-button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7zM17 11h.01"/></svg>打印 / 保存 PDF</button>
     </div>
   </aside>
@@ -713,7 +716,7 @@
     <header class="hero">
       <div class="eyebrow">插件作者参考 / 清单 · Python API · 结果协议</div>
       <h1>ModelDock Python 插件协议</h1>
-      <p class="lead">定义 Python 模型插件怎样被安装、加载和执行，以及如何向 ModelDock 返回可校验、可展示的结果。本机与 SSH 节点使用同一套接口。</p><div class="callout"><strong>本文是插件协议的独立定义来源。</strong>仓库已提供 SDK/Worker 0.1.0 源码与随插件分发的 wheel；尚未发布独立 PyPI 包。当前实现范围见下表，后续扩展仍保留规划标识。系统调度见 <a href="technical-plan.html">技术方案</a>，产品验收见 <a href="product-plan.html">产品方案</a>。</div>
+      <p class="lead">定义 Python 模型插件怎样被安装、加载和执行，以及如何向 ModelDock 返回可校验、可展示的结果。本机与 SSH 节点使用同一套接口。</p><div class="callout"><strong>本文是插件协议的独立定义来源。</strong>仓库已提供 SDK/Worker 0.1.1（兼容 0.1.0 生命周期） 源码与随插件分发的 wheel；尚未发布独立 PyPI 包。当前实现范围见下表，后续扩展仍保留规划标识。系统调度见 <a href="technical-plan.html">技术方案</a>，产品验收见 <a href="product-plan.html">产品方案</a>。</div>
     </header>
     <section class="section" id="scope">
       <div class="section-head"><span class="section-num">01</span><h2>适用范围与责任边界</h2></div>
@@ -1037,11 +1040,45 @@ class Plugin:
       <div class="section-head"><span class="section-num">15</span><h2>版本兼容与接入检查清单</h2></div>
 <div class="table-wrap"><table><thead><tr><th scope="col">版本层次</th><th scope="col">兼容规则</th></tr></thead><tbody><tr><td>清单 schema_version</td><td>决定清单字段与含义，不支持的主版本拒绝导入。</td></tr><tr><td>插件 version</td><td>标识代码与模型支持变化，配合包摘要识别具体构件。</td></tr><tr><td>SDK 版本范围</td><td>PEP 440 检查；0.x 阶段在显式范围内验证，不推断所有 0.x 版本兼容。</td></tr><tr><td>result_schema</td><td>分类/检测各自版本化，不支持的结果模式在加载前拒绝。</td></tr><tr><td>进程消息 protocol_version</td><td>由 Worker 与控制器维护，插件作者无需手写；跨节点保持可协商版本。</td></tr></tbody></table></div>
 <p>核心字段重命名、坐标/分数含义改变、必填参数增加或接口签名不兼容都需要对应协议主版本升级。可忽略元数据使用 extensions 命名空间。插件版本不能替代协议版本。</p>
-<ol><li>清单完整，支持模型与运行方案标识唯一，所有路径合法且存在。</li><li>在声明的 Windows/Linux 节点用锁文件完成环境准备与健康检查。</li><li>每个支持模型至少有成功样本、参数错误、权重不匹配和资源释放检查。</li><li>分类验证概率与标签；检测验证空结果、原图坐标、NMS 与稳定排序。</li><li>结果可编码为严格 JSON，无 Tensor/NumPy 对象和非有限数值。</li><li>检查预热排除、计时能力与 GPU 同步，未实现分段时明确返回 null。</li><li>损坏输入、可恢复样本异常、任务级异常和取消均按约定处理。</li><li>同一插件在本机与 SSH 节点使用相同 Python API，不包含节点地址或凭据。</li><li>权重与样本来源、参考结果和数值容差有记录；可视化无须理解原始张量。</li></ol>
+<ol><li>清单完整，支持模型与运行方案标识唯一，所有路径合法且存在。</li><li>在声明的 Windows/Linux 节点用锁文件完成环境准备与健康检查。</li><li>每个目录配置须通过实际加载检查；发布前覆盖各类适配路径的成功样本、参数错误、权重不匹配和资源释放。逐型号业务验收应单独记录。</li><li>分类验证概率与标签；检测验证空结果、原图坐标、NMS 与稳定排序。</li><li>结果可编码为严格 JSON，无 Tensor/NumPy 对象和非有限数值。</li><li>检查预热排除、计时能力与 GPU 同步，未实现分段时明确返回 null。</li><li>损坏输入、可恢复样本异常、任务级异常和取消均按约定处理。</li><li>同一插件在本机与 SSH 节点使用相同 Python API，不包含节点地址或凭据。</li><li>权重与样本来源、参考结果和数值容差有记录；可视化无须理解原始张量。</li></ol>
 <p>已提供 Python 清单校验器、SDK wheel 与 Worker；独立 JSON Schema 文件和接入验证 CLI 后续提供。本文代码是接口示例，完整参考实现见仓库；文档验证与模型功能测试分别记录。</p>
 <p>文档样式采用用户指定的 <a href="https://github.com/whoarei/skills/tree/f8d312ed5e5f091e80562cf463758787e176d208/rtd-html-docs">rtd-html-docs skill</a>，保持单文件离线阅读、配色切换与打印能力。</p>
     </section>
-    <footer class="footer">ModelDock · Python 插件协议草案 · 2026-11-13<br>单文件 HTML · 支持离线阅读与打印 / 保存 PDF</footer>
+
+    <section class="section" id="timm-example">
+      <div class="section-head"><span class="section-num">16</span><h2>timm 接入示例与应用扩展</h2></div>
+<p>0.3.0 的 timm 插件使用 SDK 0.1.1 的兼容接口，采用 StagedPlugin、classification/1 和每节点每插件独立环境。每个支持配置都有稳定标识，适配器按 config_data 选择完整 timm 型号、预处理和匹配权重。</p><p>模型条目的 extensions.modeldock.family 和 extensions.modeldock.pretrained 为可选应用扩展。预训练扩展包括候选 HTTP/HTTPS URL 与文件名、插件内相对类别路径、类别数和许可。控制器验证路径与格式，在当前节点下载；这些字段不改变 Python predict 或结果协议。</p><p>PT/PTH/BIN 仅支持可安全读取且匹配所选模型的张量 state_dict。训练时改变预处理需要匹配插件配置。现有 YOLO ONNX 适配器兼容范围保持原样。</p>
+    </section>
+
+    <section class="section" id="describe-metadata">
+      <div class="section-head"><span class="section-num">17</span><h2>可选模型描述 describe(context) · SDK 0.1.1</h2></div>
+<p>基础生命周期仍为 load(context, model, instance)、predict(sample, params, context)、close()。插件可选实现 describe(context)，在加载成功后、close 前返回模型元数据。Worker 不要求插件暴露 ONNX Session 或其他框架内部对象；本机和 SSH 使用相同调用。</p><pre><code>def describe(self, context):
+    return {
+        "schema_version": "1",
+        "providers": ["PyTorchCPU"],
+        "inputs": [{"name": "images", "shape": [1, 3, 224, 224], "dtype": "float32"}],
+        "outputs": [{"name": "logits", "shape": [1, 1000], "dtype": "float32"}],
+        "extensions": {"my_plugin": {"architecture": "example"}}
+    }</code></pre><div class="table-wrap"><table><thead><tr><th>字段</th><th>约定</th></tr></thead><tbody><tr><td>schema_version</td><td>必填字符串 "1"。这是描述接口的版本，独立于结果协议与 SDK。</td></tr><tr><td>providers</td><td>可选字符串列表；缺失或空列表代表没有声明。使用实际执行后端，不推断设备能力。</td></tr><tr><td>inputs / outputs</td><td>可选张量描述列表。同组 name 非空且唯一，shape 为非负整数、符号字符串或 null 的列表，标量使用空列表；dtype 为非空类型名称，推荐 float32、int64 等。</td></tr><tr><td>extensions</td><td>可选 JSON 对象。插件专属内容放到以插件 ID 命名的子对象。</td></tr></tbody></table></div><p>返回值必须可编码为严格 JSON，不含 Tensor、数组对象或 NaN/Infinity；未知顶层字段、错误维度和非法声明报 INVALID_MODEL_METADATA，阶段 describe，模型导入失败并执行 close。SDK 提供 validate_model_metadata 供开发者自检。describe 不下载权重、不改变模型状态、不执行正式样本测试，也不承诺每个任务都会重新调用。</p><p>缺少此方法的旧插件继续可用，元数据可以为空。Worker 对 SDK 0.1.0 的 session.get_providers/get_inputs 约定保留兼容桥；旧 inputs.type 字段在桥中保留，新接口采用 dtype。新插件实现公开的 describe，不依赖兼容桥。现有 ONNX 插件不需要修改解码或重新导出模型。</p>
+    </section>
+
+    <section class="section" id="shared-extensions">
+      <div class="section-head"><span class="section-num">18</span><h2>应用共用清单扩展与维护规则</h2></div>
+<p>应用通用声明使用模型条目的 extensions.modeldock，插件专属扩展放到 extensions.&lt;插件ID&gt;。当前共用字段为 family（非空模型家族）和 pretrained（可选预训练来源）。未声明扩展的插件继续按文件方式导入。</p><pre><code>"extensions": {
+  "modeldock": {
+    "family": "example-family",
+    "pretrained": {
+      "candidates": [{"url": "https://example.com/model.safetensors", "filename": "model.safetensors"}],
+      "labels": "labels/classes.txt",
+      "parameters": {"num_classes": 1000},
+      "label_set": "Example labels",
+      "license": "参见权重发布页",
+      "homepage": "https://example.com/model"
+    }
+  }
+}</code></pre><p>candidates 必须有 1 至 3 个候选，URL 为不含用户名密码的 HTTP/HTTPS，文件名不得包含路径且后缀在 weight_formats 中。控制器按顺序下载，仅 HTTP 404 触发下一候选；下载失败仍可取消、重试或改用手动来源。labels 为可选、存在的插件内相对文件路径；parameters 为可选对象，所有键必须在该模型的 parameter_schema 中声明，值仍接受既有参数校验。用户选择预训练时应用按声明填入并锁定这些参数，界面不固定某插件的参数名。label_set、license、homepage 为可选展示信息。</p><p>下载与类别路径由当前节点控制器处理；插件 load 只读取已落盘权重。此扩展不改变 predict 或 classification/1、detection/1。目录中的下载来源是可变发布地址，实际权重摘要、配置和插件版本会保存在模型与任务记录中。</p><p>本文随插件接口实现持续维护，仓库 AGENTS.md 规定更新接口时同步文档、版本、锁文件和兼容测试。新增通用能力先明确调用时机、数据语义、失败行为及缺失时的回退；业务参数与框架细节保持在插件中。SDK 0.1.1 新增可选 describe/1 和共用扩展校验，0.1.0 的生命周期及结果协议继续有效；破坏性变更必须版本化并说明迁移路径。</p>
+    </section>
+    <footer class="footer">ModelDock · Python 插件协议草案 · 2026-11-14<br>单文件 HTML · 支持离线阅读与打印 / 保存 PDF</footer>
   </main>
 </div>
 <script>

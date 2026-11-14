@@ -161,3 +161,20 @@ def file_server():
     server.shutdown()
     server.server_close()
     thread.join(5)
+
+
+@pytest.fixture(scope="session")
+def timm_runtime(environment, tmp_path_factory):
+    api("install_plugin", dict(plugin_id="timm", profile_id="torch-cpu"))
+    installation = wait_for(
+        lambda: store.get("installation", "timm"), lambda i: i["state"] != "preparing", timeout=900
+    )
+    assert installation["state"] == "ready", installation
+    directory = tmp_path_factory.mktemp("timm 权重")
+    store.run_process(
+        [installation["python"], str(ROOT / "scripts/create_timm_fixtures.py"), str(directory)],
+        check=True,
+        capture_output=True,
+        timeout=120,
+    )
+    return installation, directory

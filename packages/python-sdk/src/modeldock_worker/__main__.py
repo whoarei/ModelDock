@@ -11,6 +11,7 @@ from pathlib import Path
 import numpy as np
 from modeldock_sdk import Context, PluginError, Sample, StagedPlugin, validate_prediction
 from modeldock_sdk.manifest import inside
+from modeldock_sdk.metadata import collect_model_metadata
 
 
 def load(descriptor, context, overrides=None, threads=1):
@@ -71,17 +72,7 @@ def validate_model(path):
         plugin, model, instance, params = load(descriptor, context)
         try:
             metadata = dict(
-                parameters=params,
-                task=model["task"],
-                providers=plugin.session.get_providers()
-                if callable(getattr(getattr(plugin, "session", None), "get_providers", None))
-                else None,
-                inputs=[
-                    dict(name=i.name, shape=i.shape, type=i.type)
-                    for i in plugin.session.get_inputs()
-                ]
-                if callable(getattr(getattr(plugin, "session", None), "get_inputs", None))
-                else [],
+                parameters=params, task=model["task"], **collect_model_metadata(plugin, context)
             )
         finally:
             plugin.close()
@@ -288,11 +279,10 @@ def run(ident):
             retryable=False,
         )
     metrics["input_verification_ms"] = (time.perf_counter_ns() - verification_started) / 1e6
-    for name in ("modeldock-sdk", "onnxruntime", "numpy", "Pillow"):
-        try:
-            dependencies[name] = importlib.metadata.version(name)
-        except importlib.metadata.PackageNotFoundError:
-            pass
+    for distribution in importlib.metadata.distributions():
+        name = distribution.metadata.get("Name")
+        if name:
+            dependencies[name] = distribution.version
     cancelled = cancelled or (directory / "cancel").exists()
     report = dict(
         version="0.1.0",
@@ -315,7 +305,10 @@ def run(ident):
         threads=config["threads"],
         precision="model-defined",
         input_dtype=(config["instance"].get("validation", {}).get("inputs") or [{}])[0].get(
-            "type", "plugin-defined"
+            "dtype",
+            (config["instance"].get("validation", {}).get("inputs") or [{}])[0].get(
+                "type", "plugin-defined"
+            ),
         ),
         environment_fingerprint=config["installation"]["fingerprint"],
         profile=config["installation"]["profile_id"],

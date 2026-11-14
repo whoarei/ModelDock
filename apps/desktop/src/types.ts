@@ -8,6 +8,17 @@ export interface ModelSpec {
   parameter_schema_data?: { properties: Record<string, any> };
   config_data?: { input_size: number[] };
   capabilities?: { timing_mode: string };
+  extensions?: {
+    modeldock?: {
+      family?: string;
+      pretrained?: {
+        parameters?: Params;
+        label_set?: string;
+        license?: string;
+        homepage?: string;
+      };
+    };
+  };
 }
 export interface Plugin {
   id: string;

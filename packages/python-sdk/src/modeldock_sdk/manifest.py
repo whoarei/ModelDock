@@ -3,6 +3,7 @@
 import json
 import re
 from pathlib import Path
+from urllib.parse import urlsplit
 
 IDENTIFIER = re.compile(r"^[a-z][a-z0-9_-]{0,63}$")
 
@@ -108,4 +109,57 @@ def read_manifest(root):
                 check(child)
 
         check(schema)
+        extensions = model.get("extensions", {})
+        if not isinstance(extensions, dict):
+            raise ValueError("模型 extensions 必须为对象")
+        common = extensions.get("modeldock", {})
+        if not isinstance(common, dict) or set(common) - {"family", "pretrained"}:
+            raise ValueError("extensions.modeldock 包含未知字段")
+        if "family" in common and (
+            not isinstance(common["family"], str) or not common["family"].strip()
+        ):
+            raise ValueError("模型家族必须为非空字符串")
+        if "pretrained" in common:
+            preset = common["pretrained"]
+            if not isinstance(preset, dict) or set(preset) - {
+                "candidates",
+                "labels",
+                "parameters",
+                "label_set",
+                "license",
+                "homepage",
+            }:
+                raise ValueError("预训练扩展字段无效")
+            parameters = preset.get("parameters", {})
+            if not isinstance(parameters, dict) or set(parameters) - schema["properties"].keys():
+                raise ValueError("预训练参数必须在参数描述中声明")
+            for key in ("label_set", "license", "homepage"):
+                if key in preset and not isinstance(preset[key], str):
+                    raise ValueError("预训练扩展的 " + key + " 必须为字符串")
+            if "labels" in preset and not inside(root, preset["labels"]).is_file():
+                raise ValueError("预训练类别路径必须为文件")
+            candidates = preset.get("candidates")
+            if not isinstance(candidates, list) or not 1 <= len(candidates) <= 3:
+                raise ValueError("预训练下载需提供 1 至 3 个候选文件")
+            for candidate in candidates:
+                if not isinstance(candidate, dict) or set(candidate) != {"url", "filename"}:
+                    raise ValueError("预训练候选需要 url 和 filename")
+                url, name = candidate["url"], candidate["filename"]
+                if not isinstance(url, str) or any(c in url for c in "\r\n\0"):
+                    raise ValueError("预训练 URL 无效")
+                parsed = urlsplit(url)
+                if (
+                    parsed.scheme not in ("http", "https")
+                    or not parsed.hostname
+                    or parsed.username is not None
+                    or parsed.password is not None
+                ):
+                    raise ValueError("预训练来源必须为不含用户名密码的 HTTP/HTTPS URL")
+                if (
+                    not isinstance(name, str)
+                    or not name
+                    or any(c in name for c in '/\\:*?"<>|\r\n\0')
+                    or Path(name).suffix.lstrip(".").lower() not in model["weight_formats"]
+                ):
+                    raise ValueError("预训练文件名或权重格式无效")
     return obj

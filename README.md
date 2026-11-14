@@ -2,12 +2,13 @@
 
 插件化本地与远程模型测试平台。以 Tauri 构建 Windows 桌面应用，通过 Python 插件接入模型，使用 uv 维护每节点、每插件的运行环境，并支持 SSH Linux 节点。
 
-当前推进 **0.2.0**。已加入 Tauri 桌面应用、Python SDK/Worker、本机与 SSH 控制器及参考插件；方案文档描述的后续能力不等于本版已开放能力。
+当前版本 **0.3.0**。已加入 Tauri 桌面应用、Python SDK/Worker、本机与 SSH 控制器及参考插件；方案文档描述的后续能力不等于本版已开放能力。
 
 ## 当前实现范围
 
 - 每节点、每插件独立的 uv 环境；插件 ZIP 导入、安装、修复和卸载。
 - ONNX 分类与约定格式的 YOLO 检测参考插件；权重与类别文件独立导入，加载时验证。
+- timm 图像分类插件：209 个预训练配置、模型搜索与家族筛选，独立 PyTorch CPU 环境。
 - 权重可从 HTTP/HTTPS URL 下载到当前运行节点，显示进度、支持取消与重试，可选 SHA-256 校验。
 - 单图、图片目录/批量及预热后的性能测试；任务排队、取消、中断识别和同配置重测。
 - 原图/结果切换、检测框与列表联动、类别/置信度筛选、缩放拖动及 PNG 结果图导出。
@@ -31,7 +32,13 @@
 
 选中本机时下载到本机缓存；选中 SSH 节点时由该节点直接下载，类别文件填写远端路径。单文件最大 2 GiB，当前节点最多同时下载 3 个文件；支持重定向、取消和失败重试，重试从头开始。关闭导入窗口会请求取消正在进行的下载，成功文件保留在内容缓存中。链接返回登录页或分享网页时会提示改用文件直链；首批插件仍只支持声明的 ONNX 格式。
 
-此功能已进入开发分支，尚未包含在已发布的 0.2.0 安装包中。
+URL 权重下载从 0.3.0 起提供。
+
+## timm 图像分类
+
+在插件管理准备“timm 图像分类”的 torch-cpu 环境，再导入模型。timm 使用 SDK 0.1.1 的可选 describe/1 元数据接口；目录固定于 timm 1.0.31，包含 209 个常见 ImageNet-1k 配置，可搜索模型名并按家族筛选。选择“官方预训练权重”下载后自动填入 ImageNet 类别；也可导入匹配架构的 safetensors 或 PT/PTH/BIN 张量权重，填写训练时的类别数与类别文件。加载严格检查权重键、形状与类别数。
+
+本版仅 CPU、batch=1，自动采用所选配置的输入尺寸、裁剪和归一化参数；训练时更改预处理的权重需提供匹配插件配置。安装包不捆绑预训练权重，下载前显示权重许可。目录配置逐次执行加载检查，目录数量不代表逐项业务精度与性能验收。详见 [插件说明](plugins/timm/README.md)。
 
 ## 本地开发
 
@@ -89,7 +96,7 @@ npm run build --prefix apps/desktop
 
 ## 发布维护
 
-应用版本由桌面 package.json、Tauri 配置、Cargo.toml 与控制器版本共同维护；SDK 和参考插件采用各自的兼容版本，不随应用版本一起升级。
+应用版本由桌面 package.json、Tauri 配置、Cargo.toml 与控制器版本共同维护；SDK（当前 0.1.1）和参考插件采用各自的兼容版本，不随应用版本一起升级。
 
 推送 `v<应用版本>` 标签会先运行完整验证并构建 NSIS 包。配置仓库 Actions Secrets `TAURI_SIGNING_PRIVATE_KEY` 和 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` 后，构建器可签名并发布稳定版。没有签名 Secret 时仅生成草稿 Release，不能将未签名包发布为在线更新。
 
@@ -97,12 +104,12 @@ npm run build --prefix apps/desktop
 
 ```sh
 cd apps/desktop
-npm run tauri -- signer sign --private-key-path <private-key-file> --app-version 0.2.0 <installer.exe>
+npm run tauri -- signer sign --private-key-path <private-key-file> --app-version 0.3.0 <installer.exe>
 cd ../..
 uv run python scripts/release_assets.py <release-dir> --record
 ```
 
-将生成的 `release-signatures/v<版本>.json` 提交到 main，会触发 `Verify and publish locally signed release`。该文件只含公开签名、版本与安装包 SHA-256；流水线先检查草稿安装包摘要，再附加更新清单，并复用升级工作流测试下载、安装、重启和数据保留，通过后才发布为 latest。也可单独运行 `Verify signed application upgrade` 检查指定草稿标签。私钥必须独立安全备份；遗失后无法用现有安装版信任的公钥继续更新。仓库只保存公钥。
+将生成的 `release-signatures/v<版本>.json` 提交到 main，会触发 `Verify and publish locally signed release`。该文件只含公开签名、版本与安装包 SHA-256；流水线先检查草稿安装包摘要，再附加更新清单，并复用升级工作流测试下载、安装、重启和数据保留，通过后才发布为 latest。签名记录也可指定已通过验证的源构建，由流水线核对源码、安装包摘要后创建候选标签和草稿，无需重复构建。也可单独运行 `Verify signed application upgrade` 检查指定草稿标签。私钥必须独立安全备份；遗失后无法用现有安装版信任的公钥继续更新。仓库只保存公钥。
 
 ## 代码布局
 
@@ -112,6 +119,7 @@ packages/controller/          stdlib 控制器、SQLite、uv、SSH、任务监�
 packages/python-sdk/          插件接口、校验、计时、ONNX 适配及 Worker
 plugins/efficientnet/          分类参考插件、SDK wheel 与锁文件
 plugins/yolo/                  检测参考插件、SDK wheel 与锁文件
+plugins/timm/                  PyTorch CPU 分类、预训练目录与锁文件
 scripts/                      可重建资源和小型 ONNX 测试图
 ```
 
@@ -126,6 +134,8 @@ Rust 负责桌面系统能力和受控进程桥；本机和远端复用 Python �
 | [Python 插件协议](docs/python-plugin-protocol.html) | 插件清单、支持模型、Python API、分类/检测结果、可视化与兼容规则 | [python-plugin-protocol.json](docs/sources/python-plugin-protocol.json) |
 
 下载仓库后，用浏览器直接打开各 HTML 文件即可离线阅读。GitHub 文件页展示的是 HTML 源码；请下载文件或克隆仓库后打开。文档包含左侧目录、默认橙色的 10 套配色切换与“打印 / 保存 PDF”入口，无 CDN 或远程字体依赖。
+
+插件接口以 [Python 插件协议](docs/python-plugin-protocol.html) 为持续维护的契约来源；新增或扩展接口时，同步维护源数据、兼容说明与测试。维护规则见 [AGENTS.md](AGENTS.md)。
 
 ## 已确定的设计原则
 

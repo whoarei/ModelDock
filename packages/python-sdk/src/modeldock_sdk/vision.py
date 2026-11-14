@@ -26,6 +26,20 @@ def nms(boxes, scores, classes, threshold, limit):
 
 
 class OnnxVision(StagedPlugin):
+    def describe(self, context):
+        return dict(
+            schema_version="1",
+            providers=self.session.get_providers(),
+            inputs=[
+                dict(name=i.name, shape=list(i.shape), dtype=i.type)
+                for i in self.session.get_inputs()
+            ],
+            outputs=[
+                dict(name=i.name, shape=list(i.shape), dtype=i.type)
+                for i in self.session.get_outputs()
+            ],
+        )
+
     def load(self, context, model, instance):
         import onnxruntime as ort
 
