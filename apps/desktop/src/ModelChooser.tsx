@@ -15,11 +15,13 @@ export default function ModelChooser({
   const [query, setQuery] = useState("");
   const [family, setFamily] = useState("");
   const families = [
-    ...new Set(models.map((m) => m.extensions?.family).filter(Boolean)),
+    ...new Set(
+      models.map((m) => m.extensions?.modeldock?.family).filter(Boolean),
+    ),
   ].sort();
   const filtered = models.filter(
     (m) =>
-      (!family || m.extensions?.family === family) &&
+      (!family || m.extensions?.modeldock?.family === family) &&
       m.name.toLowerCase().includes(query.trim().toLowerCase()),
   );
   const current = models.find((m) => m.id === value);

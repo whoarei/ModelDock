@@ -63,17 +63,20 @@ def main():
                 parameter_schema="schemas/params.json",
                 capabilities=dict(timing_mode="staged", pure_inference_benchmark=False),
                 extensions=dict(
-                    family=family,
-                    pretrained=dict(
-                        labels="labels/imagenet-1k.txt",
-                        num_classes=1000,
-                        license=cfg.license or "参见模型发布页",
-                        homepage="https://huggingface.co/" + cfg.hf_hub_id,
-                        candidates=[
-                            dict(url=base + f, filename=f)
-                            for f in ("model.safetensors", "pytorch_model.bin")
-                        ],
-                    ),
+                    modeldock=dict(
+                        family=family,
+                        pretrained=dict(
+                            labels="labels/imagenet-1k.txt",
+                            parameters=dict(num_classes=1000),
+                            label_set="ImageNet-1k",
+                            license=cfg.license or "参见模型发布页",
+                            homepage="https://huggingface.co/" + cfg.hf_hub_id,
+                            candidates=[
+                                dict(url=base + f, filename=f)
+                                for f in ("model.safetensors", "pytorch_model.bin")
+                            ],
+                        ),
+                    )
                 ),
             )
         )
@@ -82,7 +85,7 @@ def main():
         id="timm",
         name="timm 图像分类",
         version="0.1.0",
-        sdk_version=">=0.1,<0.2",
+        sdk_version=">=0.1.1,<0.2",
         entrypoint="adapter:Plugin",
         runtime_profiles=[
             dict(
@@ -93,7 +96,9 @@ def main():
             )
         ],
         models=models,
-        extensions=dict(timm_version=timm.__version__, catalog_scope="ImageNet-1k classification"),
+        extensions=dict(
+            timm=dict(version=timm.__version__, catalog_scope="ImageNet-1k classification")
+        ),
     )
     (plugin / "manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"

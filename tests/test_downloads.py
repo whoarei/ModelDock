@@ -147,12 +147,14 @@ def test_pretrained_download_fallback_and_node_labels(isolated_downloads, file_s
     plugin = store.get("plugin", "yolo")
     plugin["path"] = str(tmp_path)
     plugin["manifest"]["models"][0]["extensions"] = dict(
-        pretrained=dict(
-            labels="labels.txt",
-            candidates=[
-                dict(url=base + "/missing", filename="missing.onnx"),
-                dict(url=base + "/model.onnx", filename="pretrained.onnx"),
-            ],
+        modeldock=dict(
+            pretrained=dict(
+                labels="labels.txt",
+                candidates=[
+                    dict(url=base + "/missing", filename="missing.onnx"),
+                    dict(url=base + "/model.onnx", filename="pretrained.onnx"),
+                ],
+            )
         )
     )
     store.put("plugin", "yolo", plugin)

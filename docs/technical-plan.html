@@ -709,7 +709,7 @@
     </nav>
     <div class="foot">
       <div class="theme-control" hidden><label for="theme-select">文档配色</label><select id="theme-select"><optgroup label="经典配色"><option value="classic">经典蓝</option><option value="slate">石墨灰</option><option value="forest">森林绿</option></optgroup><optgroup label="亮色配色"><option value="sky">蓝色 · 亮色</option><option value="mint">绿色 · 亮色</option><option value="yellow">黄色 · 亮色</option><option value="pink">粉色 · 亮色</option><option value="apricot" selected>橙色 · 默认</option><option value="lavender">紫色 · 亮色</option></optgroup><optgroup label="深色配色"><option value="dark">深色</option></optgroup></select></div>
-      更新于 2026-11-14<br>版本 0.6<br>单文件 HTML · 支持离线阅读
+      更新于 2026-11-14<br>版本 0.7<br>单文件 HTML · 支持离线阅读
       <button type="button" id="print-button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7zM17 11h.01"/></svg>打印 / 保存 PDF</button>
     </div>
   </aside>
@@ -884,9 +884,9 @@ docs/                            产品、技术、协议与可编辑源数据</
 
     <section class="section" id="timm-runtime">
       <div class="section-head"><span class="section-num">19</span><h2>timm 插件与目录生成</h2></div>
-<p>运行环境锁定 timm 1.0.31、PyTorch 2.10.0 CPU、torchvision 0.25.0 和 safetensors。CPU wheel 使用显式 PyTorch 官方索引，依赖由 uv.lock 固定；SDK 继续为 0.1.0，ONNX 插件保持独立。</p><p>scripts/prepare_timm.py 在锁定环境中生成 209 个模型声明及配置，稳定标识由完整 timm 名称摘要构造。范围为常见家族、三通道、ImageNet-1k 分类，保存型号、输入与预处理、下载候选和许可。应用启动不隐式升级目录。</p><p>extensions.family 用于筛选，extensions.pretrained 提供候选文件、类别文件和许可。当前节点的下载进程优先 safetensors，HTTP 404 时尝试 PyTorch 文件；复用进度、取消、校验与缓存。模型加载阶段不联网。</p><p>适配器继承 StagedPlugin，以 weights_only=True 或 safetensors 严格加载张量权重，验证类别数和 [1,C] 输出，按 timm 配置创建预处理，输出稳定排序的 softmax Top-K。CPU、batch=1、inference_mode；会话元数据向 Worker 报告 PyTorchCPU 和真实输入约定，阶段计时及结果验证沿用 SDK。</p><p>测试以合成参数运行 MobileNet、EfficientNet、ViT 验证结构和协议，另以官方 MobileNet 下载验证预训练路径；SSH 检查部署、上传和分类，Windows 原生验收覆盖下载、导入、推理与导出。</p>
+<p>运行环境锁定 timm 1.0.31、PyTorch 2.10.0 CPU、torchvision 0.25.0 和 safetensors。CPU wheel 使用显式 PyTorch 官方索引，依赖由 uv.lock 固定；timm 使用 SDK 0.1.1，原有插件保留 0.1.0 环境，ONNX 插件保持独立。</p><p>scripts/prepare_timm.py 在锁定环境中生成 209 个模型声明及配置，稳定标识由完整 timm 名称摘要构造。范围为常见家族、三通道、ImageNet-1k 分类，保存型号、输入与预处理、下载候选和许可。应用启动不隐式升级目录。</p><p>extensions.modeldock.family 用于筛选，extensions.modeldock.pretrained 提供候选文件、类别文件和许可。当前节点的下载进程优先 safetensors，HTTP 404 时尝试 PyTorch 文件；复用进度、取消、校验与缓存。模型加载阶段不联网。</p><p>适配器继承 StagedPlugin，以 weights_only=True 或 safetensors 严格加载张量权重，验证类别数和 [1,C] 输出，按 timm 配置创建预处理，输出稳定排序的 softmax Top-K。CPU、batch=1、inference_mode；可选 describe(context) 向 Worker 报告 PyTorchCPU 和真实输入约定，阶段计时及结果验证沿用 SDK。</p><p>测试以合成参数运行 MobileNet、EfficientNet、ViT 验证结构和协议，另以官方 MobileNet 下载验证预训练路径；SSH 检查部署、上传和分类，Windows 原生验收覆盖下载、导入、推理与导出。</p>
     </section>
-    <footer class="footer">ModelDock · 技术方案草案 · 2026-11-13<br>单文件 HTML · 支持离线阅读与打印 / 保存 PDF</footer>
+    <footer class="footer">ModelDock · 技术方案草案 · 2026-11-14<br>单文件 HTML · 支持离线阅读与打印 / 保存 PDF</footer>
   </main>
 </div>
 <script>

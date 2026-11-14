@@ -36,7 +36,7 @@ URL 权重下载从 0.3.0 起提供。
 
 ## timm 图像分类
 
-在插件管理准备“timm 图像分类”的 torch-cpu 环境，再导入模型。目录固定于 timm 1.0.31，包含 209 个常见 ImageNet-1k 配置，可搜索模型名并按家族筛选。选择“官方预训练权重”下载后自动填入 ImageNet 类别；也可导入匹配架构的 safetensors 或 PT/PTH/BIN 张量权重，填写训练时的类别数与类别文件。加载严格检查权重键、形状与类别数。
+在插件管理准备“timm 图像分类”的 torch-cpu 环境，再导入模型。timm 使用 SDK 0.1.1 的可选 describe/1 元数据接口；目录固定于 timm 1.0.31，包含 209 个常见 ImageNet-1k 配置，可搜索模型名并按家族筛选。选择“官方预训练权重”下载后自动填入 ImageNet 类别；也可导入匹配架构的 safetensors 或 PT/PTH/BIN 张量权重，填写训练时的类别数与类别文件。加载严格检查权重键、形状与类别数。
 
 本版仅 CPU、batch=1，自动采用所选配置的输入尺寸、裁剪和归一化参数；训练时更改预处理的权重需提供匹配插件配置。安装包不捆绑预训练权重，下载前显示权重许可。目录配置逐次执行加载检查，目录数量不代表逐项业务精度与性能验收。详见 [插件说明](plugins/timm/README.md)。
 
@@ -96,7 +96,7 @@ npm run build --prefix apps/desktop
 
 ## 发布维护
 
-应用版本由桌面 package.json、Tauri 配置、Cargo.toml 与控制器版本共同维护；SDK 和参考插件采用各自的兼容版本，不随应用版本一起升级。
+应用版本由桌面 package.json、Tauri 配置、Cargo.toml 与控制器版本共同维护；SDK（当前 0.1.1）和参考插件采用各自的兼容版本，不随应用版本一起升级。
 
 推送 `v<应用版本>` 标签会先运行完整验证并构建 NSIS 包。配置仓库 Actions Secrets `TAURI_SIGNING_PRIVATE_KEY` 和 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` 后，构建器可签名并发布稳定版。没有签名 Secret 时仅生成草稿 Release，不能将未签名包发布为在线更新。
 
@@ -134,6 +134,8 @@ Rust 负责桌面系统能力和受控进程桥；本机和远端复用 Python �
 | [Python 插件协议](docs/python-plugin-protocol.html) | 插件清单、支持模型、Python API、分类/检测结果、可视化与兼容规则 | [python-plugin-protocol.json](docs/sources/python-plugin-protocol.json) |
 
 下载仓库后，用浏览器直接打开各 HTML 文件即可离线阅读。GitHub 文件页展示的是 HTML 源码；请下载文件或克隆仓库后打开。文档包含左侧目录、默认橙色的 10 套配色切换与“打印 / 保存 PDF”入口，无 CDN 或远程字体依赖。
+
+插件接口以 [Python 插件协议](docs/python-plugin-protocol.html) 为持续维护的契约来源；新增或扩展接口时，同步维护源数据、兼容说明与测试。维护规则见 [AGENTS.md](AGENTS.md)。
 
 ## 已确定的设计原则
 

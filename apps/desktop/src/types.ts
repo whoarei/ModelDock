@@ -9,8 +9,15 @@ export interface ModelSpec {
   config_data?: { input_size: number[] };
   capabilities?: { timing_mode: string };
   extensions?: {
-    family?: string;
-    pretrained?: { num_classes: number; license: string; homepage: string };
+    modeldock?: {
+      family?: string;
+      pretrained?: {
+        parameters?: Params;
+        label_set?: string;
+        license?: string;
+        homepage?: string;
+      };
+    };
   };
 }
 export interface Plugin {

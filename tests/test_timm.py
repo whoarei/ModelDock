@@ -31,9 +31,9 @@ def test_timm_catalog_is_versioned_and_uses_separate_environment(timm_runtime):
     plugin = store.get("plugin", "timm")
     models = plugin["manifest"]["models"]
     assert len(models) == 209 and len({m["id"] for m in models}) == len(models)
-    assert plugin["manifest"]["extensions"]["timm_version"] == "1.0.31"
+    assert plugin["manifest"]["extensions"]["timm"]["version"] == "1.0.31"
     assert installation["environment"] != store.get("installation", "efficientnet")["environment"]
-    assert {m["extensions"]["family"] for m in models} >= {
+    assert {m["extensions"]["modeldock"]["family"] for m in models} >= {
         "resnet",
         "efficientnet",
         "vision_transformer",
@@ -41,7 +41,10 @@ def test_timm_catalog_is_versioned_and_uses_separate_environment(timm_runtime):
     for model in models:
         cfg = json.loads((Path(plugin["path"]) / model["config"]).read_text())
         assert cfg["timm_name"] == model["name"] and cfg["pretrained_cfg"]["num_classes"] == 1000
-        assert model["extensions"]["pretrained"]["candidates"][0]["filename"] == "model.safetensors"
+        assert (
+            model["extensions"]["modeldock"]["pretrained"]["candidates"][0]["filename"]
+            == "model.safetensors"
+        )
 
 
 @pytest.mark.parametrize("suffix", ["safetensors", "pth"])

@@ -148,7 +148,7 @@ def start(args):
     formats = [f.lower() for f in spec["weight_formats"]]
     labels_path = None
     if args.get("pretrained") is True:
-        preset = spec.get("extensions", {}).get("pretrained", {})
+        preset = spec.get("extensions", {}).get("modeldock", {}).get("pretrained", {})
         candidates = preset.get("candidates", [])
         if not isinstance(candidates, list) or not 1 <= len(candidates) <= 3:
             raise ValueError("此模型没有提供预训练权重下载来源")

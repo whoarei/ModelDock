@@ -3,8 +3,8 @@ revision = 5
 requires-python = ">=3.11, <3.14"
 resolution-markers = [
     "python_full_version >= '3.12' and sys_platform != 'darwin'",
-    "python_full_version < '3.12' and sys_platform != 'darwin'",
     "python_full_version >= '3.12' and sys_platform == 'darwin'",
+    "python_full_version < '3.12' and sys_platform != 'darwin'",
     "python_full_version < '3.12' and sys_platform == 'darwin'",
 ]
 
@@ -258,8 +258,8 @@ wheels = [
 
 [[package]]
 name = "modeldock-sdk"
-version = "0.1.0"
-source = { path = "../../vendor/modeldock_sdk-0.1.0-py3-none-any.whl" }
+version = "0.1.1"
+source = { path = "../../vendor/modeldock_sdk-0.1.1-py3-none-any.whl" }
 dependencies = [
     { name = "jsonschema" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
@@ -268,7 +268,7 @@ dependencies = [
     { name = "pillow" },
 ]
 wheels = [
-    { filename = "modeldock_sdk-0.1.0-py3-none-any.whl", hash = "sha256:5dc868e805c470870124b63656ad8a8d1c294007ee47eb24412065701d94f5a8" },
+    { filename = "modeldock_sdk-0.1.1-py3-none-any.whl", hash = "sha256:b15a6544bcd3717104e84f0e62b3a5f0d9eab8e649ed408de9fea121f1bcc47b" },
 ]
 
 [package.metadata]
@@ -295,7 +295,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "modeldock-sdk", path = "../../vendor/modeldock_sdk-0.1.0-py3-none-any.whl" },
+    { name = "modeldock-sdk", path = "../../vendor/modeldock_sdk-0.1.1-py3-none-any.whl" },
     { name = "safetensors", specifier = "==0.8.0" },
     { name = "timm", specifier = "==1.0.31" },
     { name = "torch", specifier = "==2.10.0", index = "https://download.pytorch.org/whl/cpu" },

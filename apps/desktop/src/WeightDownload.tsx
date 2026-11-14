@@ -186,7 +186,7 @@ export default function WeightDownload({
       )}
       <p className="muted small-text">
         {pretrained
-          ? "从模型发布方下载预训练权重及使用内置 ImageNet 类别；文件会缓存到当前节点。"
+          ? "从模型发布方下载预训练权重，完成后关联插件提供的类别文件；文件会缓存到当前节点。"
           : "使用 HTTP/HTTPS 文件直链。"}
         {nodeId === "local"
           ? "文件下载到本机。"

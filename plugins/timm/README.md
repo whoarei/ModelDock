@@ -1,6 +1,6 @@
 # timm 图像分类插件
 
-使用锁定的 timm 1.0.31、PyTorch 2.10.0 CPU、torchvision 0.25.0 环境，在 Windows x64 和 SSH Linux x64 上执行图像分类。每节点只维护一个插件环境。
+使用 SDK 0.1.1 的 describe/1 元数据接口和锁定的 timm 1.0.31、PyTorch 2.10.0 CPU、torchvision 0.25.0 环境，在 Windows x64 和 SSH Linux x64 上执行图像分类。每节点只维护一个插件环境。
 
 本版目录包含 209 个 ImageNet-1k 预训练配置，来自常见 ResNet、EfficientNet、MobileNet、ConvNeXt、ViT、Swin、RegNet、DenseNet 家族。目录由 `scripts/prepare_timm.py` 使用锁定环境生成，不在应用启动时跟随上游变化。各配置都必须通过实际加载检查；目录数量不代表已经逐项完成业务精度或性能验收。
 

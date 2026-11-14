@@ -2,25 +2,8 @@
 
 from pathlib import Path
 import math
-from types import SimpleNamespace
 
 from modeldock_sdk import PluginError, StagedPlugin
-
-
-class TorchSession:
-    """Expose the backend and actual input contract to the shared worker."""
-
-    def __init__(self, model, size):
-        self.model, self.size = model, size
-
-    def get_providers(self):
-        return ["PyTorchCPU"]
-
-    def get_inputs(self):
-        return [SimpleNamespace(name="images", shape=[1, *self.size], type="tensor(float)")]
-
-    def run(self, inputs):
-        return self.model(inputs)
 
 
 class Plugin(StagedPlugin):
@@ -81,11 +64,22 @@ class Plugin(StagedPlugin):
             **resolve_model_data_config(self.model), is_training=False
         )
         size = cfg["pretrained_cfg"]["input_size"]
-        self.session = TorchSession(self.model, size)
+        self.input_size = list(size)
+        self.data_config = resolve_model_data_config(self.model)
+        self.timm_name = cfg["timm_name"]
         with torch.inference_mode():
             result = self.model(torch.zeros((1, *size)))
         if not isinstance(result, torch.Tensor) or tuple(result.shape) != (1, self.classes):
             raise PluginError("此模型不提供标准的 [1,类别数] 分类输出", "MODEL_LOAD_FAILED", "load")
+
+    def describe(self, context):
+        return dict(
+            schema_version="1",
+            providers=["PyTorchCPU"],
+            inputs=[dict(name="images", shape=[1, *self.input_size], dtype="float32")],
+            outputs=[dict(name="logits", shape=[1, self.classes], dtype="float32")],
+            extensions=dict(timm=dict(model_name=self.timm_name, data_config=self.data_config)),
+        )
 
     def preprocess(self, image, params, context):
         self.size = dict(width=image.width, height=image.height)
@@ -93,7 +87,7 @@ class Plugin(StagedPlugin):
 
     def infer(self, inputs, params, context):
         with self.torch.inference_mode():
-            return self.session.run(inputs)
+            return self.model(inputs)
 
     def postprocess(self, output, sample, params, context):
         scores = self.torch.softmax(output[0].float(), dim=0).tolist()
@@ -117,4 +111,3 @@ class Plugin(StagedPlugin):
 
     def close(self):
         self.model = None
-        self.session = None

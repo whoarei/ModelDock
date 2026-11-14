@@ -1860,11 +1860,15 @@ export default function App() {
                         setLabels("");
                       }
                       setModelType(id);
-                      setModelParams(
-                        defaults(
-                          formPlugin?.manifest.models.find((m) => m.id === id),
-                        ),
+                      const next = formPlugin?.manifest.models.find(
+                        (m) => m.id === id,
                       );
+                      setModelParams({
+                        ...defaults(next),
+                        ...(modelSource === "pretrained"
+                          ? next?.extensions?.modeldock?.pretrained?.parameters
+                          : {}),
+                      });
                     }}
                   />
                 </div>
@@ -1904,9 +1908,8 @@ export default function App() {
                       if (e.target.value === "pretrained")
                         setModelParams({
                           ...modelParams,
-                          num_classes:
-                            formSpec?.extensions?.pretrained?.num_classes ||
-                            1000,
+                          ...formSpec?.extensions?.modeldock?.pretrained
+                            ?.parameters,
                         });
                       setWeight("");
                       setLabels("");
@@ -1919,7 +1922,7 @@ export default function App() {
                       <option value="remote">远端已有路径</option>
                     )}
                     <option value="url">URL 下载</option>
-                    {formSpec?.extensions?.pretrained && (
+                    {formSpec?.extensions?.modeldock?.pretrained && (
                       <option value="pretrained">官方预训练权重</option>
                     )}
                   </select>
@@ -1978,11 +1981,13 @@ export default function App() {
                     </div>
                   </label>
                 )}
-                {formSpec?.extensions?.pretrained &&
+                {formSpec?.extensions?.modeldock?.pretrained &&
                   modelSource === "pretrained" && (
                     <p className="muted small-text">
-                      类别数：1000 · 权重许可：
-                      {formSpec.extensions.pretrained.license}
+                      {formSpec.extensions.modeldock!.pretrained!.label_set ||
+                        "预训练权重"}{" "}
+                      · 权重许可：
+                      {formSpec.extensions.modeldock!.pretrained!.license}
                       。不同权重的使用条件以发布方为准。
                     </p>
                   )}
@@ -2021,7 +2026,12 @@ export default function App() {
                     spec={formSpec}
                     value={modelParams}
                     disabledKeys={
-                      modelSource === "pretrained" ? ["num_classes"] : []
+                      modelSource === "pretrained"
+                        ? Object.keys(
+                            formSpec?.extensions?.modeldock?.pretrained
+                              ?.parameters || {},
+                          )
+                        : []
                     }
                     onChange={setModelParams}
                   />
